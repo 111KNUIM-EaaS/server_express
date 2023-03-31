@@ -1,10 +1,15 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
 const path = require('path');
 const app = express();
 
+app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
+
 
 // Router Setting
 const homeRoutes = require('./routes/homeRoutes');
@@ -24,7 +29,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start Express service
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8000;
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
 });
