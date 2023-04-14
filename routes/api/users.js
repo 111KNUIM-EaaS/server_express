@@ -6,7 +6,7 @@ const firebaseConfig = require('../../config/firebaseConfig.json');
 const router = express.Router();
 
 admin.initializeApp(firebaseConfig);
-
+    
 // GET /api/users
 router.get('/', (req, res) => {
     res.send('Hello, user!');
