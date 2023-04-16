@@ -20,11 +20,37 @@ class Database {
     }
     
     /**
-     * User login
+     * User login˙
      * @param {string} username user name
      * @param {string} password user password
      * @returns returns a promise that resolves to the results of the query
      */
+
+    
+    // user api
+    checkUser(user_uid, user_name, user_email) {
+        return new Promise((resolve, reject) => {
+            this.connection.query('SELECT user_uid FROM user_table WHERE user_uid = ?', user_uid, (err, results, fields) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(results);
+                }
+            });
+        });
+    }
+
+    addUser(user_uid, user_name, user_email) {
+        return new Promise((resolve, reject) => {
+            this.connection.query('INSERT INTO user_table(user_uid, user_name, user_email) VALUES (?, ?, ?)', [user_uid, user_name, user_email], (err, results, fields) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(results);
+                }
+            });
+        });
+    }
 
     // machine api
     checkPassword(username, password) {
