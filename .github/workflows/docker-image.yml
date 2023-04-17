@@ -15,14 +15,14 @@ jobs:
         uses: timheuer/base64-to-file@v1.2
         with:
           fileName: 'firebaseConfig.json'
-          fileDir: './conf/'
+          fileDir: './config/'
           encodedString: ${{ secrets.FIREBASECONFIG }}
 
       - name: Setup databaseConfig.json
         uses: timheuer/base64-to-file@v1.2
         with:
           fileName: 'databaseConfig.json'
-          fileDir: './conf/'
+          fileDir: './config/'
           encodedString: ${{ secrets.DATABASECONFIG }}
   
 
