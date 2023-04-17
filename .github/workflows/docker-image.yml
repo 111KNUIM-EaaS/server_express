@@ -1,0 +1,38 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build the NodeJS Docker image
+        run: |
+          TAG=$(date +%s)
+          docker build . --file Dockerfile --tag ${{ secrets.DOCKER_NAME }}:${TAG}
+          docker save ${{ secrets.DOCKER_NAME }}:${TAG} > ${{ secrets.DOCKER_NAME }}.tar
+
+      - name: scp the NodeJS Docker image
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "${{ secrets.DOCKER_NAME }}.tar"
+          target: "/tmp/${{ secrets.DOCKER_NAME }}"
+
+      # ssh to the server and run the commands
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            IMAGE_ID=$(docker load -i /tmp/${{ secrets.DOCKER_NAME }}/${{ secrets.DOCKER_NAME }}.tar | awk '/Loaded image:/ {print $3}')
+            docker tag ${IMAGE_ID} ${{ secrets.DOCKER_NAME }}:latest
