@@ -129,5 +129,8 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+# config files
 databaseConfig.json
 firebaseConfig.json
+databaseConfig
+firebaseConfig

@@ -207,8 +207,9 @@ class Database {
     }
 
     getBillList(user_uid) {
+        const query = 'SELECT machines_table.machines_id, invoices.machine_time, invoices.total_value, machine_type_table.type_name FROM invoices JOIN machines_table ON invoices.machines_id = machines_table.machines_id JOIN machine_type_table ON machine_type_table.type_id = machines_table.machines_type WHERE user_uid = ? ORDER BY `machines_table`.`machines_id` ASC'
         return new Promise((resolve, reject) => {
-            this.connection.query('SELECT machines_id, user_uid, machine_time, total_value, type_name  FROM invoices, machine_type_table WHERE user_uid = ?', [user_uid], (err, results, fields) => {
+            this.connection.query(query, [user_uid], (err, results, fields) => {
                 if (err) {
                     reject(err);
                 } else {
