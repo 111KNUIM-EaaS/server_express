@@ -10,6 +10,22 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Setup firebaseConfig.json
+        uses: timheuer/base64-to-file@v1.2
+        with:
+          fileName: 'firebaseConfig.json'
+          fileDir: './conf/'
+          encodedString: ${{ secrets.FIREBASECONFIG }}
+
+      - name: Setup databaseConfig.json
+        uses: timheuer/base64-to-file@v1.2
+        with:
+          fileName: 'databaseConfig.json'
+          fileDir: './conf/'
+          encodedString: ${{ secrets.DATABASECONFIG }}
+  
+
       - name: Build the NodeJS Docker image
         run: |
           TAG=$(date +%s)
