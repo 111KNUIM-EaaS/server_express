@@ -16,6 +16,7 @@ app.use(express.static('public'));
 const homeRoutes = require('./routes/homeRoutes');
 const usersRoutes = require('./routes/api/users');
 const machinesRoutes = require('./routes/api/machines');
+
 const { config } = require('process');
 const router = require('./routes/homeRoutes');
 app.use('/', homeRoutes);
