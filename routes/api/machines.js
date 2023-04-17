@@ -48,18 +48,36 @@ router.post('/borrow_state', (req, res) => {
 router.post('/return_time', (req, res) => {
     const returnTimeString = req.body.returnTime;
     const returnTime =  moment(returnTimeString, "YYYY-MM-DD HH:mm:ss").utcOffset(8).format("YYYY-MM-DD HH:mm:ss");
-    const return_id = req.body.machineID;
-    myDatabase.deleteMachineBorrow(return_id)
-        .then((results) => {
-            data = { status: "success", data: results };
-            res.status(200).send(data);
-            myDatabase.returnMachine(return_id);
-        }).catch((err) => {
-            console.error(err);
-            res.status(500).send('Server Error');
-        });
-    console.log("🚀 ~ file: machines.js:51 ~ router.post ~ return_id:", return_id);
+    const user_uid = req.body.uid;
+    const machine_id = req.body.machineID;
+
+
+    
+    myDatabase.addReturn(user_uid, machine_id, returnTime).then((results) => {
+        data = { status: "success", data: results };
+        res.status(200).send(data);
+        myDatabase.getMachineTime(user_uid).then((results) => {
+            console.log("🚀 ~ file: machines.js:72 ~ myDatabase.addReturn ~ results:", results)
+            let rental_time = results[0].rental_time;
+            let return_time = results[0].return_time;
+            let price       = results[0].price;
+            let rental_time_moment = moment(rental_time, "YYYY-MM-DD HH:mm:ss").utcOffset(8);
+            let return_time_moment = moment(return_time, "YYYY-MM-DD HH:mm:ss").utcOffset(8);
+            let time_diff = return_time_moment.diff(rental_time_moment, 'seconds');
+            let total_price = (price  * time_diff ).toFixed(2);
+            console.log(`🚀 ~ file: machines.js:66 ~ myDatabase.addReturn ~ time_diff:" ${time_diff} seconds`);
+            console.log(`🚀 ~ file: machines.js:67 ~ myDatabase.addReturn ~ total_price:" ${total_price} dollars`);
+            myDatabase.addBill(user_uid, machine_id, time_diff, total_price);
+            myDatabase.deleteMachineBorrow(machine_id);
+            myDatabase.returnMachine(machine_id);
+        })
+    }).catch((err) => {
+        console.error(err);
+        res.status(500).send('Server Error');
+    });
+    console.log("🚀 ~ file: machines.js:51 ~ router.post ~ return_id:", machine_id);
     console.log("🚀 ~ file: machines.js:50 ~ router.post ~ returnTime:", returnTime);
+    console.log("req.body:", req.body);
 });
 
 router.post('/state', (req, res) => {

@@ -117,6 +117,19 @@ class Database {
         });
     }
 
+    addReturn(user_uid, machines_id, return_time) {
+        return new Promise((resolve, reject) => {
+            this.connection.query('UPDATE rentals_table SET user_uid = ?, return_time = ? WHERE machines_id = ?', [user_uid, return_time, machines_id], (err, results, fields) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(results);
+                }
+            });
+        });
+    }
+        
+    
     checkMachineBorrow(user_uid) {
         return new Promise((resolve, reject) => {
             this.connection.query('SELECT * FROM borrow_table WHERE user_uid = ?', user_uid, (err, results, fields) => {
@@ -140,10 +153,12 @@ class Database {
             });
         });
     }
+    
 
+    // return api
     deleteMachineBorrow(machines_id) {
         return new Promise((resolve, reject) => {
-            this.connection.query('UPDATE rentals_table SET user_uid = NULL, rental_time = NULL WHERE machines_id = ?', [machines_id], (err, results, fields) => {
+            this.connection.query('UPDATE rentals_table SET user_uid = NULL, rental_time = NULL, return_time = NULL WHERE machines_id = ?', [machines_id], (err, results, fields) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -153,7 +168,6 @@ class Database {
 
         });
     }
-    
     returnMachine(machines_id) {
         return new Promise((resolve, reject) => {
             this.connection.query('UPDATE machines_table SET lent_state = 0 WHERE machines_id = ?;', [machines_id], (err, results, fields) => {
@@ -166,7 +180,45 @@ class Database {
         });
     }
 
+    getMachineTime(user_uid) {
+        const query = 'SELECT user_uid, machines_table.machines_id, machine_type_table.type_name, rental_time, return_time, machine_type_table.price FROM rentals_table JOIN machines_table ON rentals_table.machines_id = machines_table.machines_id JOIN machine_type_table ON machines_table.machines_type = machine_type_table.type_id WHERE user_uid = ?'
+        return new Promise((resolve, reject) => {
+            this.connection.query(query, [user_uid], (err, results, fields) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(results);
+                }
+            });
+        });
+    }
+    
+    // bill api
+    addBill(user_uid, machines_id, total_time, total_value) {
+        return new Promise((resolve, reject) => {
+            this.connection.query('INSERT INTO invoices (machines_id, user_uid, machine_time, total_value) VALUES (?, ?, ?, ?)', [machines_id, user_uid,  total_time, total_value], (err, results, fields) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(results);
+                }
+            });
+        });
+    }
 
+    getBillList(user_uid) {
+        return new Promise((resolve, reject) => {
+            this.connection.query('SELECT machines_id, user_uid, machine_time, total_value, type_name  FROM invoices, machine_type_table WHERE user_uid = ?', [user_uid], (err, results, fields) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(results);
+                }
+            });
+        });
+    }
+            
+    // close connection
     close() {
         return new Promise((resolve, reject) => {
             this.connection.end(err => {
