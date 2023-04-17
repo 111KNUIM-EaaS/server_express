@@ -6,6 +6,7 @@ WORKDIR /home/node/website
 
 RUN npm install -g create-react-app
 
+COPY /config /home/node/website/config
 COPY /public /home/node/website/public
 COPY /routes /home/node/website/routes
 COPY /package.json /home/node/website/package.json
