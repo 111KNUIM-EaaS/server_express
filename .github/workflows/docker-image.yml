@@ -52,3 +52,5 @@ jobs:
           script: |
             IMAGE_ID=$(docker load -i /tmp/${{ secrets.DOCKER_NAME }}/${{ secrets.DOCKER_NAME }}.tar | awk '/Loaded image:/ {print $3}')
             docker tag ${IMAGE_ID} ${{ secrets.DOCKER_NAME }}:latest
+            cd /home/eaas
+            docker-compose up -d --build EaaS-NodeJS-Service
