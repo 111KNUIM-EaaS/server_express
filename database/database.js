@@ -10,23 +10,16 @@ class Database {
             password: databaseConfig.password,
             database: databaseConfig.database
         });
+
         this.connection.connect((err) => {
             if (err) {
                 console.error('error connecting: ' + err.stack);
                 return;
             }
             console.log('connected as id ' + this.connection.threadId);
-        })
+        });
     }
-    
-    /**
-     * User login˙
-     * @param {string} username user name
-     * @param {string} password user password
-     * @returns returns a promise that resolves to the results of the query
-     */
 
-    
     // user api
     checkUser(user_uid, user_name, user_email) {
         return new Promise((resolve, reject) => {
@@ -128,8 +121,7 @@ class Database {
             });
         });
     }
-        
-    
+
     checkMachineBorrow(user_uid) {
         return new Promise((resolve, reject) => {
             this.connection.query('SELECT * FROM borrow_table WHERE user_uid = ?', user_uid, (err, results, fields) => {
@@ -218,7 +210,78 @@ class Database {
             });
         });
     }
-            
+
+    /***  ESP32 Machine API [/api/espdev]  ***/
+
+    /**
+     * 
+     * @param   { String  } user  ESP32 device MAC Address.
+     * @param   { String  } token ESP32 device Token.
+     * @returns { boolean } true if token is valid.
+     */
+    checkMachineToken(user, token) {
+        const table = 'machines';
+        const user_th = 'machines_mac';
+        const token_th = 'machines_password';
+        const query = `SELECT * FROM ${table} WHERE ${user_th} = ? AND ${token_th} = ? ?`
+        return new Promise((resolve, reject) => {
+            this.connection.query(query, [user, token], (err, results, fields) => {
+                if (err) {
+                    console.log("🚀 ~ file: database.js:230 ~ Database ~ this.connection.query ~ err:", err)
+                    reject(err);
+                } else {
+                    console.log("🚀 ~ file: database.js:235 ~ Database ~ this.connection.query ~ results:", results)
+                    resolve(results);
+                }
+            });
+        });
+    }
+
+    /**
+     * 
+     * @param   { String } mac    ESP32 device MAC Address.
+     * @returns { Int    } status of machine (0: offline, 1: booting, 2: boot, 3: pausing, 4: pause).
+     */
+    getMachineState(mac) {
+        const table = 'machines';
+        const status_th = 'status';
+        const query = `SELECT ${status_th} FROM ${table} WHERE machines_mac = ?`
+        return new Promise((resolve, reject) => {
+            this.connection.query(query, [mac], (err, results, fields) => {
+                if (err) {
+                    console.log("🚀 ~ file: database.js:252 ~ Database ~ this.connection.query ~ err:", err)
+                    reject(err);
+                } else {
+                    console.log("🚀 ~ file: database.js:255 ~ Database ~ this.connection.query ~ results:", results)
+                    resolve(results);
+                }
+            });
+        });
+    }
+    
+    /**
+     * 
+     * @param   { String  } user   ESP32 device MAC Address.
+     * @param   { String  } status Machine status.
+     * @returns { boolean } true if sql query is success.
+     */
+    setMachineState(user, status) {
+        const table = 'machines';
+        const status_th = 'status';
+        const query = `UPDATE ${table} SET ${status_th} = ? WHERE machines_mac = ?`
+        return new Promise((resolve, reject) => {
+            this.connection.query(query, [status, user], (err, results, fields) => {
+                if (err) {
+                    console.log("🚀 ~ file: database.js:275 ~ Database ~ this.connection.query ~ err:", err)
+                    reject(err);
+                } else {
+                    console.log("🚀 ~ file: database.js:278 ~ Database ~ this.connection.query ~ results:", results)
+                    resolve(results);
+                }
+            });
+        });
+    }
+
     // close connection
     close() {
         return new Promise((resolve, reject) => {
