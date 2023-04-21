@@ -16,31 +16,43 @@ router.post('/', (req, res) => {
 
 // [POST] /api/espdev/get/status
 router.post('/get/status', async (req, res) => {
+    res.setHeader('Content-Type', 'text/plain');
     const user  = req.get('user');
     const token = req.get('token');
-    const data  = req.body;
-    console.log(`🚀 ~ file: espdev.js:22 ~ router.post ~ [${user}: ${token}]:`, data);
+    // const data  = req.body;
+    // console.log(`🚀 ~ file: espdev.js:23 ~ router.post ~ [${user}: ${token}]:`, data);
 
-    my_res = checkToken(user, token);
-    
-    if(my_res.code != 401 && my_res.code != 500) {
-        myDatabase.getMachineState(user).then((results) => {
-            if(results >= 0) {
-                my_res.code = 200;
-                my_res.message = { status: "success", code: code, data: { mac: user, status: results } };
+    // Check token
+    myDatabase.checkMachineToken(user, token)
+        .then((results) => {
+            if(results == false) {
+                console.error(`[POST] /api/espdev/get/status: [401: Unauthorized]${user}`);
+                res.status(401).send("Unauthorized");
+                return;
             } else {
-                my_res.code = 500;
-                my_res.message = { status: "error", code: code, message: "Server Error" };
+                // Get machine status
+                myDatabase.getMachineState(user)
+                    .then((results) => {
+                        if(results >= 0) {
+                            // console.log(`[POST] /api/espdev/get/status: [${user}]status: ${results}`);
+                            res.status(200).send(`results${results}`);
+                        } else {
+                            res.status(500).send("Server Error");
+                            return;;
+                        }
+                    })
+                    .catch((err) => {
+                        console.log("🚀 ~ file: espdev.js:45 ~ router.post ~ err:", err);
+                        res.status(500).send("Server Error");
+                        return;
+                    });
             }
         })
         .catch((err) => {
-            console.log("🚀 ~ file: espdev.js:28 ~ router.post ~ err:", err)
-            my_res.code = 500;
-            my_res.message = { status: "error", code: code, message: "Server Error" };
+            console.log("🚀 ~ file: espdev.js:52 ~ router.post ~ err:", err);
+            res.status(500).send("Server Error");
+            return;
         });
-    }
-
-    res.status(my_res.code).send(my_res.message);
 });
 
 // [POST] /api/espdev/set/status

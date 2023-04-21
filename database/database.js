@@ -223,15 +223,20 @@ class Database {
         const table = 'machines';
         const user_th = 'machines_mac';
         const token_th = 'machines_password';
-        const query = `SELECT * FROM ${table} WHERE ${user_th} = ? AND ${token_th} = ? ?`
+        const select_th = 'machines_id';
+        const query = `SELECT ${select_th} FROM ${table} WHERE ${user_th} = ? AND ${token_th} = ?`
         return new Promise((resolve, reject) => {
             this.connection.query(query, [user, token], (err, results, fields) => {
                 if (err) {
-                    console.log("🚀 ~ file: database.js:230 ~ Database ~ this.connection.query ~ err:", err)
+                    console.log("database.js checkMachineToken err:", err);
                     reject(err);
                 } else {
-                    console.log("🚀 ~ file: database.js:235 ~ Database ~ this.connection.query ~ results:", results)
-                    resolve(results);
+                    // console.log("database.js checkMachineToken results:", results);
+                    if(results.length == 1) {
+                        resolve(true);
+                    } else {
+                        resolve(false);
+                    }
                 }
             });
         });
@@ -249,11 +254,25 @@ class Database {
         return new Promise((resolve, reject) => {
             this.connection.query(query, [mac], (err, results, fields) => {
                 if (err) {
-                    console.log("🚀 ~ file: database.js:252 ~ Database ~ this.connection.query ~ err:", err)
+                    console.log("database.js getMachineState[1] err:", err);
                     reject(err);
                 } else {
-                    console.log("🚀 ~ file: database.js:255 ~ Database ~ this.connection.query ~ results:", results)
-                    resolve(results);
+                    // console.log("database.js getMachineState results:", results);
+                    if(results.length == 1) {
+                        try {
+                            let status = parseInt(results[0].status);
+                            if(status > -1 && status < 5) {
+                                resolve(status);
+                            } else {
+                                resolve(-1);
+                            }
+                        } catch (e) {
+                            console.log("database.js getMachineState[2] ~ e:", e)
+                            resolve(-1);
+                        }
+                    } else {
+                        resolve(-1);
+                    }
                 }
             });
         });
