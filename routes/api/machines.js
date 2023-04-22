@@ -22,25 +22,47 @@ router.get('/list', (req, res) => {
 });
 
 router.post('/borrow_state', (req, res) => {
-    const borrowTimeString = req.body.borrowTime;
-    const borrowTime =  moment(borrowTimeString, "YYYY-MM-DD HH:mm:ss").utcOffset(8).format("YYYY-MM-DD HH:mm:ss");
-    const type_id = req.body.type_id;
-    const user_uid = req.body.uid;
+    try {
+        const my_user   = req.get("User");
+        const data      = req.body
+        // console.log(`[POST]/borrow_state (${my_user}): ${JSON.stringify(data)}`);
 
-    myDatabase.sendMachineType(type_id)
-        .then((results) => {
-            data = { status: "success", data: results };
-            res.status(200).send(data);
-            let machines_id = results[0].machines_id;
-            console.log("🚀 ~ file: machines.js:36 ~ router.post ~ machines_id:", machines_id);
-            myDatabase.addMachineBorrow(machines_id);
-            myDatabase.addRental(user_uid, machines_id, borrowTime)
-        }).catch((err) => {
-            console.error(err);
-            res.status(500).send('Server Error');
-        });
-    console.log("🚀 ~ file: machines.js:43 ~ router.post ~ borrowTime:", borrowTime);
-    console.log("req.uid:", req.body);
+        const type_id       = data.type_id;
+        const user_project  = data.user_project;
+        const user_name     = data.user_name;
+        const repo          = data.repo;
+        const token         = data.token;
+        // console.log(`[POST]/borrow_state (${my_user}): type_id: ${type_id}, user_project: ${user_project}, user_name: ${user_name}, repo: ${repo}, token: ${token}`);
+
+        myDatabase.setRentalsMachineUser(type_id, my_user)
+            .then((results) => {
+                if(results.status == 1){
+                    myDatabase.setRentalsInfo(results.machines_id, my_user, user_project, user_name, repo, token)
+                        .then((results2) => {
+                            console.log(`[POST]/borrow_state (${my_user}): results2: ${JSON.stringify(results2)}`);
+                            if(results2.status == 1){
+                                console.log(`[POST]/borrow_state (${my_user}): Success!, machines_id: ${results.machines_id}`);
+                                res.status(200).send("Success");
+                            } else {
+                                console.log(`[POST]/borrow_state (${my_user}): Failed!, machines_id: ${results.machines_id}`);
+                                res.status(401).send("Bad Request");
+                            }
+                        }).catch((err) => {
+                            console.error('[POST]/borrow_state: setRentalsInfo', err);
+                            res.status(500).send('Server Error');
+                        });
+                } else {
+                console.error('[POST]/borrow_state: setRentalsMachineUser: Unknow Error');
+                res.status(401).send("Bad Request");                    
+                }
+            }).catch((err) => {
+                console.error('[POST]/borrow_state: setRentalsMachineUser', err);
+                res.status(500).send('Server Error');
+            });
+
+    } catch (error) {
+        res.status(401).send("Bad Request");
+    }
 });
 
 router.post('/return_time', (req, res) => {

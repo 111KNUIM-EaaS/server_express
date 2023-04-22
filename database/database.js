@@ -79,7 +79,7 @@ class Database {
                 if (err) {
                     reject(err);
                 } else {
-                    console.log("🚀 ~ file: database.js:77 ~ this.connection.query ~ results:", results);
+                    // console.log("🚀 ~ file: database.js:77 ~ this.connection.query ~ results:", results);
                     resolve(results);
                 }
             });
@@ -113,6 +113,78 @@ class Database {
             });
         });
     }
+
+    /**
+     * 
+     * @param   {Int    } machines_type - machine type id
+     * @param   {String } user_uid - user uid
+     * @returns {Promise} 0: no machine available, 1: success
+     */
+    setRentalsMachineUser(machines_type, user_uid) {
+        return new Promise((resolve, reject) => {
+            const table = 'machines'
+            const query = `SELECT machines_id FROM ${table} WHERE machines_type = ? AND status = 0`;
+            this.connection.query(query, [machines_type], (err, results, fields) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    if(results.length > 0) {
+                        const machines_id = results[0].machines_id;
+                        this.connection.query(`UPDATE ${table} SET status = 4 WHERE machines_id = ?`, [machines_id], (err, results, fields) => {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                const table2 = 'rentals'
+                                const column = '(user_uid, machines_id, rental_time, return_time, total_time, git_token, project_name, git_repo, git_owner)';
+                                const value  = '(?, ?, NOW(), NULL, NULL, NULL, NULL, NULL, NULL)';
+                                this.connection.query(`INSERT INTO ${table2} ${column} VALUES ${value}`, [user_uid, machines_id], (err, results, fields) => {
+                                    if (err) {
+                                        reject(err);
+                                    } else {
+                                        // console.log("[setRentalsMachineUser]results: ", results);
+                                        resolve( {status: 1, machines_id: machines_id} );
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        console.log("setMachineUser: no machine available");
+                        resolve( {status: 0, machines_id: null} );
+                    }
+                }
+            });
+        });
+    }
+
+    /**
+     * 
+     * @param {String} machines_id  - machine id
+     * @param {String} user_uid     - user uid
+     * @param {String} project      - project name
+     * @param {String} owner        - git owner
+     * @param {String} repo         - git repo
+     * @param {String} token        - git token
+     * @returns {Promise} 0: unknown error, 1: success
+     */
+    setRentalsInfo(machines_id, user_uid, project, owner, repo, token) {
+        const table = 'rentals';
+        const query = `UPDATE ${table} SET project_name = ?, git_owner = ?, git_repo = ?, git_token = ? WHERE user_uid = ? AND machines_id = ?`;
+        return new Promise((resolve, reject) => {
+            this.connection.query(query, [project, owner, repo, token, user_uid, machines_id], (err, results, fields) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    // console.log("setRentalsInfo: ", results);
+                    if(results.affectedRows === 1) {
+                        resolve( {status: 1} );
+                    } else {
+                        resolve( {status: 0} );
+                    }
+                }
+            });
+        });
+    }
+
     // borrow api
     addRental(user_uid, machines_id, rental_time) {
         return new Promise((resolve, reject) => {
