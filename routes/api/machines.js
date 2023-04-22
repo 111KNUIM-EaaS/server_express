@@ -110,10 +110,11 @@ router.post('/state', (req, res) => {
     console.log("🚀 ~ file: machines.js:55 ~ router.post ~ uid:", uid);
     myDatabase.getMachineList(uid)
         .then((results) => {
-            data = { status: "success", data: results };
-            res.status(200).send(data);
+            // console.log("[POST]/state susses results:", JSON.stringify(results));
+            console.log("[POST]/state susses");
+            res.status(200).send(results);
         }).catch((err) => {
-            console.error(err);
+            console.error("[POST]/state error:", err);
             res.status(500).send('Server Error');
         });
 });

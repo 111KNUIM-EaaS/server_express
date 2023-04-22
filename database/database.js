@@ -86,17 +86,66 @@ class Database {
         });
     }
     
+    /**
+     * Get User Machine List
+     * 
+     * @param   {Sting} uid - user uid
+     * @returns {Promise} status: 0 - no machine, 1 - success, -1 - error
+     * 
+     * data :
+     *      project_name - project name
+     *      time         - rental time
+     *      machine -
+     *          type    - machine type
+     *          price   - machine price
+     *          status  - machine status
+     *      github -
+     *          repo  - github repo
+     *          owner - github owner
+     * 
+     */
     getMachineList(uid) {
-        const query = 'SELECT machines.machines_id, type.type_name FROM machines JOIN type ON machines.machines_type = type.type_id JOIN rentals ON rentals.machines_id = machines.machines_id JOIN user ON rentals.user_uid = user.user_uid WHERE rentals.user_uid = ?';
+        const select = 'type.type_name, type.price, rentals.project_name, rentals.rental_time, rentals.git_repo, rentals.git_owner, machines.status';
+        const from   = 'rentals, machines, type';
+        const where  = 'rentals.return_time IS NULL AND rentals.machines_id = machines.machines_id AND machines.machines_type = type.type_id AND rentals.user_uid = ?';
+        // const query = 'SELECT machines.machines_id, type.type_name FROM machines JOIN type ON machines.machines_type = type.type_id JOIN rentals ON rentals.machines_id = machines.machines_id JOIN user ON rentals.user_uid = user.user_uid WHERE rentals.user_uid = ?';
+        const query = `SELECT ${select} FROM ${from} WHERE ${where}`;
         const sql = uid;
         return new Promise((resolve, reject) => {
             this.connection.query(query, sql, (err, results, fields) => {
                 if (err) {
-                    console.log("🚀 ~ file: database.js:44 ~ Database ~ this.connection.query ~ err:", err)
+                    console.log("🚀 ~ file: database.js:44 ~ Database ~ this.connection.query ~ err:", err);
                     reject(err);
                 } else {
-                    console.log("🚀 ~ file: database.js:48 ~ Database ~ this.connection.query ~ results:", results)
-                    resolve(results);
+                    // console.log("🚀 ~ file: database.js:48 ~ Database ~ this.connection.query ~ results:", results);
+                    if(results.length > 0) {
+                        try {
+                            let data_List = []
+                            results.map((item) => {
+                                let data = {
+                                    project_name: item.project_name,
+                                    time: item.rental_time,
+                                    machine: {
+                                        type: item.type_name,
+                                        price: item.price,
+                                        status: item.status
+                                    },
+                                    github: {
+                                        repo: item.git_repo,
+                                        owner: item.git_owner
+                                    }
+                                }
+                                data_List.push(data);
+                            });
+                            // console.log("database.js getMachineList data_List:", JSON.stringify(data_List));
+                            resolve( {length: results.length, data: data_List, status: 1} );
+                        } catch (error) {
+                            console.log("database.js getMachineList error:", error);
+                            resolve( {length: 0, data: [], status: -1} );
+                        }
+                    } else {
+                        resolve( {length: 0, data: [], status: 0} );
+                    }
                 }
             });
         });
