@@ -52,7 +52,7 @@ router.post('/borrow_state', (req, res) => {
                             res.status(500).send('Server Error');
                         });
                 } else {
-                console.error('[POST]/borrow_state: setRentalsMachineUser: Unknow Error');
+                console.error('[POST]/borrow_state: setRentalsMachineUser: Unknown Error');
                 res.status(401).send("Bad Request");                    
                 }
             }).catch((err) => {
@@ -117,6 +117,36 @@ router.post('/state', (req, res) => {
             console.error("[POST]/state error:", err);
             res.status(500).send('Server Error');
         });
+});
+
+router.post('/delete', (req, res) => {
+    try {
+        const uid   = req.get('User');
+        const data  = req.body;
+        const rid   = data.rid;
+
+        console.log(`[POST]/delete (${uid}): rid: ${rid}`);
+
+        myDatabase.deleteRentalsMachineUser(uid, rid)
+            .then((results) => {
+                console.log(`[POST]/delete (${uid}): ${JSON.stringify(results)}`);
+                if(results.status == 1) {
+                    console.log(`[POST]/delete (${uid}): Success!`);
+                    res.status(200).send("Success");
+
+                } else {
+                    console.error(`[POST]/delete (${uid}): Failed!`);
+                    res.status(401).send("Bad Request");
+                }
+
+            }).catch((err) => {
+                console.error("[POST]/delete error:", err);
+                res.status(500).send('Server Error');
+            });
+
+    } catch (error) {
+        res.status(401).send("Bad Request");
+    }
 });
 
 

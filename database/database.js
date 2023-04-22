@@ -105,7 +105,7 @@ class Database {
      * 
      */
     getMachineList(uid) {
-        const select = 'type.type_name, type.price, rentals.project_name, rentals.rental_time, rentals.git_repo, rentals.git_owner, machines.status';
+        const select = 'type.type_name, type.price, rentals.rental_id, rentals.project_name, rentals.rental_time, rentals.git_repo, rentals.git_owner, machines.status';
         const from   = 'rentals, machines, type';
         const where  = 'rentals.return_time IS NULL AND rentals.machines_id = machines.machines_id AND machines.machines_type = type.type_id AND rentals.user_uid = ?';
         // const query = 'SELECT machines.machines_id, type.type_name FROM machines JOIN type ON machines.machines_type = type.type_id JOIN rentals ON rentals.machines_id = machines.machines_id JOIN user ON rentals.user_uid = user.user_uid WHERE rentals.user_uid = ?';
@@ -123,6 +123,7 @@ class Database {
                             let data_List = []
                             results.map((item) => {
                                 let data = {
+                                    id: item.rental_id,
                                     project_name: item.project_name,
                                     time: item.rental_time,
                                     machine: {
@@ -217,7 +218,7 @@ class Database {
      */
     setRentalsInfo(machines_id, user_uid, project, owner, repo, token) {
         const table = 'rentals';
-        const query = `UPDATE ${table} SET project_name = ?, git_owner = ?, git_repo = ?, git_token = ? WHERE user_uid = ? AND machines_id = ?`;
+        const query = `UPDATE ${table} SET project_name = ?, git_owner = ?, git_repo = ?, git_token = ? WHERE user_uid = ? AND machines_id = ? AND return_time IS NULL`;
         return new Promise((resolve, reject) => {
             this.connection.query(query, [project, owner, repo, token, user_uid, machines_id], (err, results, fields) => {
                 if (err) {
@@ -228,6 +229,73 @@ class Database {
                         resolve( {status: 1} );
                     } else {
                         resolve( {status: 0} );
+                    }
+                }
+            });
+        });
+    }
+
+    /**
+     * 
+     * @param {Sting} uid - user uid
+     * @param {INT  } rid - rental id
+     * @returns {Promise} 0: unknown error, 1: success, 2: Cna not set return time, 3: Can not set machine status
+     */
+    deleteRentalsMachineUser(uid, rid) {
+        const table = 'rentals';
+        const sql = `UPDATE ${table} SET return_time = NOW() WHERE user_uid = ? AND rental_id = ? AND return_time IS NULL`;
+        return new Promise((resolve, reject) => {
+            this.connection.query(sql, [uid, rid], (err, results, fields) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    // console.log("deleteRentalsMachineUser[1]: ", results);
+                    if(results.affectedRows === 1) {
+                        // Get machine id
+                        this.connection.query(`SELECT machines_id FROM ${table} WHERE user_uid = ? AND rental_id = ?`, [uid, rid], (err, results, fields) => {
+                            if (err) {
+                                reject(err);
+                            }
+                            // console.log("deleteRentalsMachineUser[2]: ", results);
+                            if(results.length > 0) {
+                                const table2 = 'machines';
+                                const machines_id = results[0].machines_id;
+                                const status = 0;
+                                this.connection.query(`UPDATE ${table2} SET status = ${status} WHERE machines_id = ?`, [machines_id], (err, results, fields) => {
+                                    if (err) {
+                                        reject(err);
+                                    } else {
+                                        if(results.affectedRows === 1) {
+                                            // console.log("deleteRentalsMachineUser[3]: ", results);
+                                            resolve( {status: 1} );
+                                            // // Get ran time and return time
+                                            // this.connection.query(`SELECT rental_time, return_time FROM ${table} WHERE user_uid = ? AND rental_id = ?`, [uid, rid], (err, results, fields) => {
+                                            //     if (err) {
+                                            //         reject(err);
+                                            //     } else {
+                                            //         if(results.affectedRows === 1) {
+                                            //             // Update total time
+                                            //             const rental_time = results[0].rental_time;
+                                            //             const return_time = results[0].return_time;
+                                            //             const total_time = return_time - rental_time;
+
+                                            //         } else {
+                                            //             console.log("deleteRentalsMachineUser: Can not get ran time and return time");
+                                            //             resolve( {status: 4} );
+                                            //         }
+                                            //     }
+                                            // });
+                                        } else {
+                                            console.log("deleteRentalsMachineUser: Can not set machine status");
+                                            resolve( {status: 3} );
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        console.log("deleteRentalsMachineUser: Cna not set return time");
+                        resolve( {status: 2} );
                     }
                 }
             });
