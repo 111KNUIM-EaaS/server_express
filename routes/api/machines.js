@@ -149,5 +149,34 @@ router.post('/delete', (req, res) => {
     }
 });
 
+router.post('/info', (req, res) => {
+    try {
+        const uid   = req.get('User');
+        const data  = req.body;
+        const rid   = data.rid;
+
+        console.log(`[POST]/info (${uid}): rid: ${rid}`);
+
+        myDatabase.getMachineInfo(rid)
+            .then((results) => {
+                // console.log(`[POST]/info (${uid}): ${JSON.stringify(results)}`);
+                if(results.status == 1) {
+                    console.log(`[POST]/info (${uid}): Success!`);
+                    res.status(200).send(results.data);
+
+                } else {
+                    console.error(`[POST]/info (${uid}): Failed!`);
+                    res.status(401).send("Bad Request");
+                }
+
+            }).catch((err) => {
+                console.error("[POST]/info error:", err);
+                res.status(500).send('Server Error');
+            });
+
+    } catch (error) {
+        res.status(401).send("Bad Request");
+    }
+});
 
 module.exports = router;

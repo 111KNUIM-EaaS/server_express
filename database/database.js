@@ -185,8 +185,8 @@ class Database {
                                 reject(err);
                             } else {
                                 const table2 = 'rentals'
-                                const column = '(user_uid, machines_id, rental_time, return_time, total_time, git_token, project_name, git_repo, git_owner)';
-                                const value  = '(?, ?, NOW(), NULL, NULL, NULL, NULL, NULL, NULL)';
+                                const column = '(user_uid, machines_id, rental_time, return_time, git_token, project_name, git_repo, git_owner)';
+                                const value  = '(?, ?, NOW(), NULL, NULL, NULL, NULL, NULL)';
                                 this.connection.query(`INSERT INTO ${table2} ${column} VALUES ${value}`, [user_uid, machines_id], (err, results, fields) => {
                                     if (err) {
                                         reject(err);
@@ -200,6 +200,49 @@ class Database {
                     } else {
                         console.log("setMachineUser: no machine available");
                         resolve( {status: 0, machines_id: null} );
+                    }
+                }
+            });
+        });
+    }
+
+    /**
+     * 
+     * @param   {String} rid - rental id 
+     * @returns {Promise} 0: no machine available, 1: success, -1: error
+     */
+    getMachineInfo(rid) {
+        return new Promise((resolve, reject) => {
+            const table = 'rentals';
+            const query = `SELECT machines.machines_id, type.type_name, type.price, rentals.rental_id, rentals.project_name, rentals.rental_time, rentals.git_repo, rentals.git_owner, machines.status FROM ${table} JOIN machines ON rentals.machines_id = machines.machines_id JOIN type ON machines.machines_type = type.type_id WHERE rentals.rental_id = ?`;
+            this.connection.query(query, [rid], (err, results, fields) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    if(results.length > 0) {
+                        try {
+                            let data = {
+                                id: results[0].rental_id,
+                                project_name: results[0].project_name,
+                                time: results[0].rental_time,
+                                machine: {
+                                    id: results[0].machines_id,
+                                    type: results[0].type_name,
+                                    price: results[0].price,
+                                    status: results[0].status
+                                },
+                                github: {
+                                    repo: results[0].git_repo,
+                                    owner: results[0].git_owner
+                                }
+                            }
+                            resolve( {data: data, status: 1} );
+                        } catch (error) {
+                            console.log("database.js getMachineInfo error:", error);
+                            resolve( {data: null, status: -1} );
+                        }
+                    } else {
+                        resolve( {data: null, status: 0} );
                     }
                 }
             });
