@@ -285,6 +285,8 @@ class Database {
      * @returns { boolean } true if sql query is success.
      */
     setMachineState(user, status) {
+        if(status < 0 || status > 4) return new Promise((resolve, reject) => { resolve(false); });
+
         const table = 'machines';
         const status_th = 'status';
         const query = `UPDATE ${table} SET ${status_th} = ? WHERE machines_mac = ?`
@@ -295,7 +297,7 @@ class Database {
                     reject(err);
                 } else {
                     console.log("🚀 ~ file: database.js:278 ~ Database ~ this.connection.query ~ results:", results)
-                    resolve(results);
+                    resolve(true);
                 }
             });
         });

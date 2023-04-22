@@ -57,36 +57,62 @@ router.post('/get/status', async (req, res) => {
 
 // [POST] /api/espdev/set/status
 router.post('/set/status', async (req, res) => {
+    res.setHeader('Content-Type', 'text/plain');
+
+    let status = -1;
     const user  = req.get('user');
     const token = req.get('token');
     const data  = req.body;
     console.log(`🚀 ~ file: espdev.js:51 ~ router.post ~ [${user}: ${token}]:`, data);
 
-    my_res = checkToken(user, token);
-    
-    if(my_res.code != 401 && my_res.code != 500) {
-        if(data.status >= 0 && data.status <= 5) {
-            myDatabase.setMachineState(user, data.status).then((results) => {
-                if(results == true) {
-                    my_res.code = 200;
-                    my_res.message = { status: "success", code: code, data: { mac: user, status: results } };
-                } else {
-                    my_res.code = 500;
-                    my_res.message = { status: "error", code: code, message: "Server Error" };
-                }
-            })
-            .catch((err) => {
-                console.log("🚀 ~ file: espdev.js:28 ~ router.post ~ err:", err)
-                my_res.code = 500;
-                my_res.message = { status: "error", code: code, message: "Server Error" };
-            });
-        } else {
-            my_res.code = 400;
-            my_res.message = { status: "error", code: code, message: "Bad Request" };
+    try {
+        if(data.status === undefined) {
+            res.status(400).send("Bad Request");
+            return;
+        } 
+        
+        status = parseInt(data.status);
+
+        if(status < 0 || status > 4) {
+            res.status(400).send("Bad Request");
+            return;
         }
+    } catch (error) {
+        res.status(400).send("Bad Request");
+        return;
     }
 
-    res.status(my_res.code).send(my_res.message);
+    // Check token
+    myDatabase.checkMachineToken(user, token)
+        .then((results) => {
+            if(results == false) {
+                console.error(`[POST] /api/espdev/set/status: [401: Unauthorized]${user}`);
+                res.status(401).send("Unauthorized");
+                return;
+            } else {
+                myDatabase.setMachineState(user, status)
+                    .then((results) => {
+                        if(results == true) {
+                            console.log(`[POST] /api/espdev/set/status: [${user}]status: ${results}`);
+                            res.status(200).send('Success');
+                            return;
+                        } else {
+                            res.status(500).send("Server Error");
+                            return;;
+                        }
+                    })
+                    .catch((err) => {
+                        console.log("🚀 ~ file: espdev.js:85 ~ router.post ~ err:", err);
+                        res.status(500).send("Server Error");
+                        return;
+                    });
+            }
+        })
+        .catch((err) => {
+            console.log("🚀 ~ file: espdev.js:92 ~ router.post ~ err:", err);
+            res.status(500).send("Server Error");
+            return;
+        });
 });
 
 /**
