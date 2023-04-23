@@ -1,5 +1,5 @@
 {
-	"name": "EaaS Server Express",
+	"name": "EaaS Server Express espdev",
 	"build": {
         "dockerfile": "Dockerfile"
     },

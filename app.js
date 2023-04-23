@@ -17,6 +17,7 @@ const homeRoutes = require('./routes/homeRoutes');
 const usersRoutes = require('./routes/api/users');
 const machinesRoutes = require('./routes/api/machines');
 const billsRoutes = require('./routes/api/bill');
+const espdevRoutes = require('./routes/api/espdev');
 
 const { config } = require('process');
 const router = require('./routes/homeRoutes');
@@ -24,6 +25,7 @@ app.use('/', homeRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/machines/', machinesRoutes);
 app.use('/api/bills/', billsRoutes);
+app.use('/api/espdev/', espdevRoutes);
 
 // 40X
 app.use((req, res, next) => {
