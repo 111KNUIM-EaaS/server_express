@@ -44,7 +44,7 @@ router.post('/google/login', async (req, res) => {
             res.cookie('name', decodedToken.name);
             res.cookie('email', decodedToken.email);
             res.cookie('uid:', decodedToken.uid);
-            res.cookie('token:', decodedToken.data.idToken);
+            res.cookie('token:', data.idToken);
 
             res_data = { status: "susses", name: data.fullName, email: data.email };
         })
