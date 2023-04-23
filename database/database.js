@@ -251,6 +251,65 @@ class Database {
 
     /**
      * 
+     * @param {String} uid 
+     * @param {String} rid 
+     * @param {String} url 
+     * @param {String} tag 
+     * @returns {Promise} 0: machine is not match, 1: success
+     */
+    sendMachineOTA(uid, rid, url, tag) {
+        const table = 'rentals';
+        const query = `SELECT machines_id FROM ${table} WHERE user_uid = ? AND rental_id = ? AND return_time IS NULL`;
+        return new Promise((resolve, reject) => {
+            // check 0 < url < 200, 0 < tag < 20 
+            if(url !== undefined && tag !== undefined) {
+                if(url.length < 1 || url.length > 200 || tag.length < 1 || tag.length > 20) {
+                    console.error("sendMachineOTA[3]: error:", "url or tag length is not match");
+                    resolve( {status: -1} );
+                } else {
+                    // change https to http
+                    url = url.replace("https://", "http://");
+                }
+            } else {
+                console.error("sendMachineOTA[4]: error:", "url or tag is undefined");
+                resolve( {status: -2} );
+            }
+
+            // check if the machine rid and uid is match
+            this.connection.query(query, [uid, rid], (err, results, fields) => {
+                if (err) {
+                    console.error("sendMachineOTA[0]: error:", err);
+                    reject(err);
+                } else {
+                    if(results.length === 1) {
+                        const machines_id = results[0].machines_id;
+                        const table2 = 'machines';
+                        const query2 = `UPDATE ${table2} SET git_name = ?, git_tag = ?, status = 5 WHERE machines_id = ?`;
+                        this.connection.query(query2, [url, tag, machines_id], (err, results, fields) => {
+                            if (err) {
+                                console.error("sendMachineOTA[1]: error:", err);
+                                reject(err);
+                            } else {
+                                if(results.affectedRows !== 1) {
+                                    console.error("sendMachineOTA[2]: error:", err);
+                                    reject(err);
+                                } else {
+                                    console.log("sendMachineOTA: results:", results);
+                                    resolve( {status: 1} );
+                                }
+                            }
+                        });
+                    } else {
+                        console.log("sendMachineOTA: machine is not match");
+                        resolve( {status: 0} );
+                    }
+                }
+            });
+        });
+    }
+
+    /**
+     * 
      * @param {String} machines_id  - machine id
      * @param {String} user_uid     - user uid
      * @param {String} project      - project name
@@ -304,7 +363,7 @@ class Database {
                                 const table2 = 'machines';
                                 const machines_id = results[0].machines_id;
                                 const status = 0;
-                                this.connection.query(`UPDATE ${table2} SET status = ${status} WHERE machines_id = ?`, [machines_id], (err, results, fields) => {
+                                this.connection.query(`UPDATE ${table2} SET status = ${status}, git_name = NULL, git_tag = NULL WHERE machines_id = ?`, [machines_id], (err, results, fields) => {
                                     if (err) {
                                         reject(err);
                                     } else {

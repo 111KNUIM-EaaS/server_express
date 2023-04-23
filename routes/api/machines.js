@@ -179,4 +179,37 @@ router.post('/info', (req, res) => {
     }
 });
 
+router.post('/ota', (req, res) => {
+    try {
+        const uid  = req.get('User');
+        const data = req.body;
+        const rid  = data.rid;
+        const url  = data.firmware.url;
+        const tag  = data.firmware.tag;
+
+        console.log(`[POST]/info (${uid}): data: ${JSON.stringify(data)}`);
+
+        myDatabase.sendMachineOTA(uid, rid, url, tag)
+            .then((results) => {
+                // console.log(`[POST]/info (${uid}): ${JSON.stringify(results)}`);
+                if(results.status === 1) {
+                    console.log(`[POST]/info (${uid}, ${rid}): Success!`);
+                    res.status(200).send("Success");
+
+                } else {
+                    console.error(`[POST]/info (${uid}, ${rid}): Failed! status: ${results.status}`);
+                    res.status(401).send("Bad Request");
+                }
+
+            }).catch((err) => {
+                console.error("[POST]/info error:", err);
+                res.status(500).send('Server Error');
+            });
+
+    } catch (error) {
+        console.error("[POST]/ota error:", error);
+        res.status(401).send("Bad Request");
+    }
+});
+
 module.exports = router;
