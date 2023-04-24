@@ -260,8 +260,8 @@ class Database {
                     console.error("sendMachineOTA[3]: error:", "url or tag length is not match");
                     resolve( {status: -1} );
                 } else {
-                    // change https to http
-                    url = url.replace("https://", "http://");
+                    // // change https to http
+                    // url = url.replace("https://", "http://");
                 }
             } else {
                 console.error("sendMachineOTA[4]: error:", "url or tag is undefined");
