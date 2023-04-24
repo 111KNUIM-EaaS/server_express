@@ -340,11 +340,11 @@ class Database {
      * @returns {Promise} 0: unknown error, 1: success
      * @description update rental info by rental id
      */
-    updateRentalsInfo(rid, project, repo, token) {
+    updateRentalsInfo(rid, owner, repo, token) {
         const table = 'rentals';
-        const query = `UPDATE ${table} SET project_name = ?, git_repo = ?, git_token = ? WHERE rental_id = ? AND return_time IS NULL`;
+        const query = `UPDATE ${table} SET git_owner = ?, git_repo = ?, git_token = ? WHERE rental_id = ? AND return_time IS NULL`;
         return new Promise((resolve, reject) => {
-            this.connection.query(query, [project, repo, token, rid], (err, results, fields) => {
+            this.connection.query(query, [owner, repo, token, rid], (err, results, fields) => {
                 if (err) {
                     reject(err);
                 } else {

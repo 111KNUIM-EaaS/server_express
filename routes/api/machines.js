@@ -182,15 +182,17 @@ router.post('/info', (req, res) => {
 router.post('/update_info', (req, res) => {
     console.log("🚀 ~ file: machines.js:55 ~ router.post ~ req.body:", req.body);
     try {
-        const data         = req.body;
-        const rid          = data.rid;
-        const user_project = data.user_project;
-        const repo         = data.repo; 
-        const token        = data.token;
-        myDatabase.updateRentalsInfo(rid, user_project, repo, token)
+        const data  = req.body;
+        const rid   = data.rid;
+        const owner = data.owner;
+        const repo  = data.repo; 
+        const token = data.token;
+
+        myDatabase.updateRentalsInfo(rid, owner, repo, token)
             .then((results) => {
                 console.log("🚀 ~ file: machines.js:191 ~ router.post ~ results:", results);
                 console.log("update_info success");
+                res.status(200).send( {status: "Success"} );
             })
             .catch((err) => {
                 console.error("[POST]/update_info error:", err);
@@ -213,6 +215,7 @@ router.post('/update_status', (req, res) => {
             .then((results) => {
                 console.log("update_status success");
                 console.log("🚀 ~ file: machines.js:213~ router.post ~ results:", results);
+                res.status(200).send( {status: "Success"} );
             })
             .catch((err) => {
                 console.error("[POST]/update_status error:", err);
