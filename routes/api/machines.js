@@ -179,6 +179,50 @@ router.post('/info', (req, res) => {
     }
 });
 
+router.post('/update_info', (req, res) => {
+    console.log("🚀 ~ file: machines.js:55 ~ router.post ~ req.body:", req.body);
+    try {
+        const data         = req.body;
+        const rid          = data.rid;
+        const user_project = data.user_project;
+        const repo         = data.repo; 
+        const token        = data.token;
+        myDatabase.updateRentalsInfo(rid, user_project, repo, token)
+            .then((results) => {
+                console.log("🚀 ~ file: machines.js:191 ~ router.post ~ results:", results);
+                console.log("update_info success");
+            })
+            .catch((err) => {
+                console.error("[POST]/update_info error:", err);
+                res.status(500).send('Server Error');
+            })
+    } catch (error) {
+        res.status(401).send("Bad Request");
+    }
+});
+
+router.post('/update_status', (req, res) => {
+    console.log("🚀 ~ file: machines.js:204 ~ router.post ~ req.body:", req.body);
+    try {
+        const uid          = req.get('User');
+        const data         = req.body;
+        const rid          = data.rid;
+        const status       = data.status;
+        console.log(`[POST]/update_status (${uid}): rid: ${rid}, status: ${status}`);
+        myDatabase.updateMachineStatus(uid, rid, status)
+            .then((results) => {
+                console.log("update_status success");
+                console.log("🚀 ~ file: machines.js:213~ router.post ~ results:", results);
+            })
+            .catch((err) => {
+                console.error("[POST]/update_status error:", err);
+                res.status(500).send('Server Error');
+            })
+    } catch (error) {
+        res.status(401).send("Bad Request");
+    }
+});
+
 router.post('/ota', (req, res) => {
     try {
         const uid  = req.get('User');

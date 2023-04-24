@@ -332,6 +332,83 @@ class Database {
 
     /**
      * 
+     * @param {String} rid          - rental id
+     * @param {String} project      - project name
+     * @param {String} owner        - git owner
+     * @param {String} repo         - git repo
+     * @param {String} token        - git token
+     * @returns {Promise} 0: unknown error, 1: success
+     * @description update rental info by rental id
+     */
+    updateRentalsInfo(rid, project, repo, token) {
+        const table = 'rentals';
+        const query = `UPDATE ${table} SET project_name = ?, git_repo = ?, git_token = ? WHERE rental_id = ? AND return_time IS NULL`;
+        return new Promise((resolve, reject) => {
+            this.connection.query(query, [project, repo, token, rid], (err, results, fields) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    // console.log("setRentalsInfo: ", results);
+                    if(results.affectedRows === 1) {
+                        resolve( {status: 1} );
+                    } else {
+                        resolve( {status: 0} );
+                    }
+                }
+            });
+        });
+    }
+
+    /**
+     * 
+     * @param {String} rid - rental id
+     * @param {String} status - machine status
+     * @returns {Promise} 0: unknown error, 1: success
+     * @description set return time
+     */
+    updateMachineStatus(uid, rid, status) {
+        const table = 'rentals';
+        const query = `SELECT machines_id FROM ${table} WHERE user_uid = ? AND rental_id = ?`;
+        return new Promise((resolve, reject) => {
+            this.connection.query(query, [uid, rid], (err, results, fields) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    if(results.length > 0) {
+                        const machine_id = results[0].machines_id;
+                        const table2 = 'machines';
+                        const query2 = `UPDATE ${table2} SET status = ? WHERE machines_id = ?`;
+                        this.connection.query(query2, [status, machine_id], (err, results, fields) => {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve( {status: 1} );
+                                if(status === 0) {
+                                    this.deleteRentalsMachineUser(uid, rid)
+                                    .then((result) => {
+                                        resolve(result);
+                                    }).catch((err) => {
+                                        reject(err);
+                                    });
+                                } else if　(status === 1) {
+                                    console.log("updateMachineStatus: ", results);
+                                } else if (status === 3) {
+                                    console.log("updateMachineStatus: ", results);
+                                }
+                                
+                                console.log("updateMachineStatus: ", results);
+                            }
+                        });
+                    } else {
+                        resolve( {status: 0} );
+                    }
+                }
+            });
+        });
+    }
+
+    /**
+     * 
      * @param {Sting} uid - user uid
      * @param {INT  } rid - rental id
      * @returns {Promise} 0: unknown error, 1: success, 2: Cna not set return time, 3: Can not set machine status
