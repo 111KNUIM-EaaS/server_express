@@ -561,7 +561,7 @@ class Database {
                     if(results.length == 1) {
                         try {
                             let status = parseInt(results[0].status);
-                            if(status > -1 && status < 5) {
+                            if(status > -1 && status < 7) {
                                 resolve(status);
                             } else {
                                 resolve(-1);
@@ -585,7 +585,7 @@ class Database {
      * @returns { boolean } true if sql query is success.
      */
     setMachineState(user, status) {
-        if(status < 0 || status > 4) return new Promise((resolve, reject) => { resolve(false); });
+        if(status < 0 || status > 7) return new Promise((resolve, reject) => { resolve(false); });
 
         const table = 'machines';
         const status_th = 'status';
@@ -596,8 +596,35 @@ class Database {
                     console.log("🚀 ~ file: database.js:275 ~ Database ~ this.connection.query ~ err:", err)
                     reject(err);
                 } else {
-                    console.log("🚀 ~ file: database.js:278 ~ Database ~ this.connection.query ~ results:", results)
+                    // console.log("🚀 ~ file: database.js:278 ~ Database ~ this.connection.query ~ results:", results)
                     resolve(true);
+                }
+            });
+        });
+    }
+
+    getOTAInfo(mid, password) {
+        const table = 'machines';
+        const mid_th = 'machines_mac';
+        const password_th = 'machines_password';
+        const status = 5; // OTAing mode
+        const query = `SELECT git_name FROM ${table} WHERE ${mid_th} = ? AND ${password_th} = ? AND status = ${status}`
+        return new Promise((resolve, reject) => {
+            this.connection.query(query, [mid, password], (err, results, fields) => {
+                if (err) {
+                    console.log("database.js getOTAInfo err:", err);
+                    reject(err);
+                } else {
+                    // console.log("database.js getOTAInfo results:", results);
+                    if(results.length == 1) {
+                        if(results[0].git_name == null) {
+                            resolve( {status: 0, url: null} );
+                        } else {
+                            resolve( {status: 1, url: results[0].git_name} );
+                        }
+                    } else {
+                        resolve( {status: 0, url: null} );
+                    }
                 }
             });
         });

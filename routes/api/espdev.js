@@ -63,7 +63,7 @@ router.post('/set/status', async (req, res) => {
     const user  = req.get('user');
     const token = req.get('token');
     const data  = req.body;
-    console.log(`🚀 ~ file: espdev.js:51 ~ router.post ~ [${user}: ${token}]:`, data);
+    // console.log(`🚀 ~ file: espdev.js:51 ~ router.post ~ [${user}: ${token}]:`, data);
 
     try {
         if(data.status === undefined) {
@@ -73,7 +73,7 @@ router.post('/set/status', async (req, res) => {
         
         status = parseInt(data.status);
 
-        if(status < 0 || status > 4) {
+        if(status < 0 || status > 6) {
             res.status(400).send("Bad Request");
             return;
         }
@@ -113,6 +113,34 @@ router.post('/set/status', async (req, res) => {
             res.status(500).send("Server Error");
             return;
         });
+});
+
+router.post('/get/url', async (req, res) => {
+    try {
+        const user  = req.get('user');
+        const token = req.get('token');
+        myDatabase.getOTAInfo(user, token)
+            .then((results) => {
+                if(results.status != 1) {
+                    console.error(`[POST] /api/espdev/get/url: [401: Unauthorized]${user}`);
+                    res.status(401).send("Unauthorized");
+                    return;
+                } else {
+                    res.status(200).send(results.url);
+                    return;
+                }
+            })
+            .catch((err) => {
+                console.log("🚀 ~ file: espdev.js:111 ~ router.post ~ err:", err);
+                res.status(500).send("Server Error");
+                return;
+            }
+        );
+
+    } catch(err) {
+        console.log("espdev.js [POST]/get/url err:", err);
+        res.status(400).send("Bad Request");
+    }
 });
 
 /**
