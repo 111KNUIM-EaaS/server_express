@@ -207,7 +207,7 @@ class Database {
     getMachineInfo(rid) {
         return new Promise((resolve, reject) => {
             const table = 'rentals';
-            const query = `SELECT machines.machines_id, type.type_name, type.price, rentals.rental_id, rentals.project_name, rentals.rental_time, rentals.git_repo, rentals.git_owner, machines.status FROM ${table} JOIN machines ON rentals.machines_id = machines.machines_id JOIN type ON machines.machines_type = type.type_id WHERE rentals.rental_id = ?`;
+            const query = `SELECT machines.machines_id, type.type_name, type.price, rentals.rental_id, rentals.project_name, rentals.rental_time, rentals.git_repo, rentals.git_owner rentals.git_token, machines.status FROM ${table} JOIN machines ON rentals.machines_id = machines.machines_id JOIN type ON machines.machines_type = type.type_id WHERE rentals.rental_id = ?`;
             this.connection.query(query, [rid], (err, results, fields) => {
                 if (err) {
                     reject(err);
@@ -226,7 +226,8 @@ class Database {
                                 },
                                 github: {
                                     repo: results[0].git_repo,
-                                    owner: results[0].git_owner
+                                    owner: results[0].git_owner,
+                                    token: results[0].git_token
                                 }
                             }
                             resolve( {data: data, status: 1} );

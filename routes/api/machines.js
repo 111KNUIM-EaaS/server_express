@@ -34,6 +34,12 @@ router.post('/borrow_state', (req, res) => {
         const token         = data.token;
         // console.log(`[POST]/borrow_state (${my_user}): type_id: ${type_id}, user_project: ${user_project}, user_name: ${user_name}, repo: ${repo}, token: ${token}`);
 
+        if(user_project.length == 0 || user_name.length == 0 || repo.length == 0 || token.length == 0){
+            console.error(`[POST]/borrow_state (${my_user}): user_project: ${user_project}, user_name: ${user_name}, repo: ${repo}`);
+            res.status(401).send("Bad Request");
+            return;
+        }
+
         myDatabase.setRentalsMachineUser(type_id, my_user)
             .then((results) => {
                 if(results.status == 1){
@@ -187,6 +193,12 @@ router.post('/update_info', (req, res) => {
         const owner = data.owner;
         const repo  = data.repo; 
         const token = data.token;
+
+        if(owner.length == 0 || repo.length == 0 || token.length == 0) {
+            console.error("[POST]/update_info error: empty input");
+            res.status(401).send("Bad Request");
+            return;
+        }
 
         myDatabase.updateRentalsInfo(rid, owner, repo, token)
             .then((results) => {
