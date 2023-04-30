@@ -94,7 +94,7 @@ router.post('/set/status', async (req, res) => {
                     .then((results) => {
                         if(results == true) {
                             console.log(`[POST] /api/espdev/set/status: [${user}]status: ${results}`);
-                            res.status(200).send('Success');
+                            res.status(200).send(`Success results${status}`);
                             return;
                         } else {
                             res.status(500).send("Server Error");
