@@ -2,7 +2,8 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "master" ]
+    tags:
+      - 'v*'
 
 jobs:
   build:
@@ -54,3 +55,4 @@ jobs:
             docker tag ${IMAGE_ID} ${{ secrets.DOCKER_NAME }}:latest
             cd /home/eaas
             docker-compose up -d --build EaaS-NodeJS-Service
+            docker-compose up -d --build EaaS-NodeJS-Service2
