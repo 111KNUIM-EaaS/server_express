@@ -4,7 +4,7 @@ const admin = require('firebase-admin');
 const firebaseConfig = require('../config/firebaseConfig.json');
 const router = express.Router();
 
-const Database = require('../database/database.js').Database;
+const Database = require('../database/database.js').DatabaseUsers;
 const myDatabase = new Database();
 
 admin.initializeApp(firebaseConfig);

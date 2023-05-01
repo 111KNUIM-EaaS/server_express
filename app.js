@@ -30,9 +30,10 @@ app.use((req, res, next) => {
 
 // 50X
 app.use((err, req, res, next) => {
+    const data = {code:'500', message:'500 Internal Server Error', path: req.path}
     const currentDate = new Date();
     console.error(`[E][${currentDate.toLocaleString()}]📝 app.js 🔊 50x method: ${req.method}, ip: ${req.ip}, path: ${req.path} error: ${err.stack}`);
-    res.status(500).send('Internal Server Error');
+    res.status(500).send(JSON.stringify(data));
 });
 
 // Start Express service

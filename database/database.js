@@ -1,15 +1,15 @@
-const mysql = require('mysql2');
-const databaseConfig  =  require('../config/databaseConfig.json');
+const mysql          = require('mysql2');
+const databaseConfig =  require('../config/databaseConfig.json');
 
-class Database {
+class DatabaseUsers {
     constructor() {
         this.pool = mysql.createPool(databaseConfig);
         this.pool.query('SELECT 1 + 1 AS solution', (error, results, fields) => {
             const currentDate = new Date();
             if(error) {
-                console.error(`[E][${currentDate.toLocaleString()}]📝 database.js 🔊 Database constructor error: ${error}.`);
+                console.error(`[E][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseUsers constructor error: ${error}.`);
             } else {
-                console.log(`[L][${currentDate.toLocaleString()}]📝 database.js 🔊 Database constructor susses.`);
+                console.log(`[L][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseUsers constructor susses.`);
             }
         });
     }
@@ -36,6 +36,36 @@ class Database {
                     resolve(results);
                 }
             });
+        });
+    }
+
+    // close connection
+    close() {
+        return new Promise((resolve, reject) => {
+            this.pool.end(err => {
+                const currentDate = new Date();
+                if(err) {
+                    console.error(`[E][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseUsers close error: ${err}`);
+                    reject(err);
+                } else {
+                    console.log(`[L][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseUsers close susses`);
+                    resolve(true);
+                }
+            });
+        });
+    }
+}
+
+class DatabaseMachines {
+    constructor() {
+        this.pool = mysql.createPool(databaseConfig);
+        this.pool.query('SELECT 1 + 1 AS solution', (error, results, fields) => {
+            const currentDate = new Date();
+            if(error) {
+                console.error(`[E][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseMachines constructor error: ${error}.`);
+            } else {
+                console.log(`[L][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseMachines constructor susses.`);
+            }
         });
     }
 
@@ -589,10 +619,10 @@ class Database {
             this.pool.end(err => {
                 const currentDate = new Date();
                 if(err) {
-                    console.error(`[E][${currentDate.toLocaleString()}]📝 database.js 🔊 Database close error: ${err}`);
+                    console.error(`[E][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseMachines close error: ${err}`);
                     reject(err);
                 } else {
-                    console.log(`[L][${currentDate.toLocaleString()}]📝 database.js 🔊 Database close susses`);
+                    console.log(`[L][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseMachines close susses`);
                     resolve(true);
                 }
             });
@@ -757,5 +787,6 @@ class DatabaseESP {
     }
 }
 
-module.exports.Database    = Database;
-module.exports.DatabaseESP = DatabaseESP;
+module.exports.DatabaseESP      = DatabaseESP;
+module.exports.DatabaseUsers    = DatabaseUsers;
+module.exports.DatabaseMachines = DatabaseMachines;
