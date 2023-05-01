@@ -8,7 +8,6 @@ RUN npm install -g create-react-app
 
 COPY /config /home/node/website/config
 COPY /database /home/node/website/database
-COPY /public /home/node/website/public
 COPY /routes /home/node/website/routes
 COPY /package.json /home/node/website/package.json
 COPY /yarn.lock /home/node/website/yarn.lock
