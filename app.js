@@ -36,7 +36,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start Express service
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 80;
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
 });
