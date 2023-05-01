@@ -16,9 +16,9 @@ const espdevRoutes   = require('./routes/espdev'  );
 const machinesRoutes = require('./routes/machines');
 
 // const { config } = require('process');
-app.use('/users',    usersRoutes);
-app.use('/espdev',   espdevRoutes);
-app.use('/machines', machinesRoutes);
+app.use('/api/users',    usersRoutes);
+app.use('/api/espdev',   espdevRoutes);
+app.use('/api/machines', machinesRoutes);
 
 // 40X
 app.use((req, res, next) => {
