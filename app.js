@@ -3,8 +3,6 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const path = require('path');
 const app = express();
-const mysql = require('mysql2');
-// const databaseConfig  =  require('./config/databaseConfig.json')
 
 app.use(cors());
 app.use(express.json());
@@ -13,19 +11,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 // Router Setting
-const homeRoutes = require('./routes/homeRoutes');
-const usersRoutes = require('./routes/api/users');
-const machinesRoutes = require('./routes/api/machines');
-const billsRoutes = require('./routes/api/bill');
-const espdevRoutes = require('./routes/api/espdev');
+const usersRoutes    = require('./routes/users'   );
+const espdevRoutes   = require('./routes/espdev'  );
+const machinesRoutes = require('./routes/machines');
 
-const { config } = require('process');
-const router = require('./routes/homeRoutes');
-app.use('/', homeRoutes);
-app.use('/api/users', usersRoutes);
-app.use('/api/machines/', machinesRoutes);
-app.use('/api/bills/', billsRoutes);
-app.use('/api/espdev/', espdevRoutes);
+// const { config } = require('process');
+app.use('/users',    usersRoutes);
+app.use('/espdev',   espdevRoutes);
+app.use('/machines', machinesRoutes);
 
 // 40X
 app.use((req, res, next) => {

@@ -1,18 +1,13 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const admin = require('firebase-admin');
-const firebaseConfig = require('../../config/firebaseConfig.json');
+const firebaseConfig = require('../config/firebaseConfig.json');
 const router = express.Router();
 
-const Database = require('../../database/database.js').Database;
+const Database = require('../database/database.js').Database;
 const myDatabase = new Database();
 
 admin.initializeApp(firebaseConfig);
-    
-// GET /api/users
-router.get('/', (req, res) => {
-    res.send('Hello, user!');
-});
 
 // GET /api/users/google/login
 router.post('/google/login', async (req, res) => {
