@@ -66,7 +66,7 @@ router.post('/borrow/state', (req, res) => {
     }
 });
 
-router.post('/return_time', (req, res) => {
+router.post('/return/time', (req, res) => {
     const returnTimeString = req.body.returnTime;
     const returnTime =  moment(returnTimeString, "YYYY-MM-DD HH:mm:ss").utcOffset(8).format("YYYY-MM-DD HH:mm:ss");
     const user_uid = req.body.uid;
@@ -180,7 +180,7 @@ router.post('/info', (req, res) => {
     }
 });
 
-router.post('/update_info', (req, res) => {
+router.post('/update/info', (req, res) => {
     console.log("🚀 ~ file: machines.js:55 ~ router.post ~ req.body:", req.body);
     try {
         const data  = req.body;
@@ -190,7 +190,7 @@ router.post('/update_info', (req, res) => {
         const token = data.token;
 
         if(owner.length == 0 || repo.length == 0) {
-            console.error("[POST]/update_info error: empty input");
+            console.error("[POST]/update/info error: empty input");
             res.status(401).send("Bad Request");
             return;
         }
@@ -198,11 +198,11 @@ router.post('/update_info', (req, res) => {
         myDatabase.updateRentalsInfo(rid, owner, repo, token)
             .then((results) => {
                 console.log("🚀 ~ file: machines.js:191 ~ router.post ~ results:", results);
-                console.log("update_info success");
+                console.log("update/info success");
                 res.status(200).send( {status: "Success"} );
             })
             .catch((err) => {
-                console.error("[POST]/update_info error:", err);
+                console.error("[POST]/update/info error:", err);
                 res.status(500).send('Server Error');
             })
     } catch (error) {
@@ -210,22 +210,22 @@ router.post('/update_info', (req, res) => {
     }
 });
 
-router.post('/update_status', (req, res) => {
+router.post('/update/status', (req, res) => {
     console.log("🚀 ~ file: machines.js:204 ~ router.post ~ req.body:", req.body);
     try {
         const uid          = req.get('User');
         const data         = req.body;
         const rid          = data.rid;
         const status       = data.status;
-        console.log(`[POST]/update_status (${uid}): rid: ${rid}, status: ${status}`);
+        console.log(`[POST]/update/status (${uid}): rid: ${rid}, status: ${status}`);
         myDatabase.updateMachineStatus(uid, rid, status)
             .then((results) => {
-                console.log("update_status success");
+                console.log("update/status success");
                 console.log("🚀 ~ file: machines.js:213~ router.post ~ results:", results);
                 res.status(200).send( {status: "Success"} );
             })
             .catch((err) => {
-                console.error("[POST]/update_status error:", err);
+                console.error("[POST]/update/status error:", err);
                 res.status(500).send('Server Error');
             })
     } catch (error) {
