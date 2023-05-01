@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const Database = require('../database/database.js').Database;
+const Database = require('../database/database.js').DatabaseESP;
 const myDatabase = new Database();
 
 // [POST] /api/espdev/get/status
