@@ -4,16 +4,6 @@ const router = express.Router();
 const Database = require('../../database/database.js').Database;
 const myDatabase = new Database();
 
-// [GET] /api/espdev
-router.get('/', (req, res) => {
-    res.status(200).send({ status: "success", code: 200, url: "/api/espdev", method: "GET" });
-});
-
-// [POST] /api/espdev
-router.post('/', (req, res) => {
-    res.status(200).send({ status: "success", code: 200, url: "/api/espdev", method: "POST" });
-});
-
 // [POST] /api/espdev/get/status
 router.post('/get/status', async (req, res) => {
     res.setHeader('Content-Type', 'text/plain');

@@ -8,11 +8,6 @@ const Database = require('../../database/database.js').Database;
 const myDatabase = new Database();
 
 admin.initializeApp(firebaseConfig);
-    
-// GET /api/users
-router.get('/', (req, res) => {
-    res.send('Hello, user!');
-});
 
 // GET /api/users/google/login
 router.post('/google/login', async (req, res) => {

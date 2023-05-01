@@ -4,11 +4,6 @@ const Database = require('../../database/database.js').Database;
 const myDatabase = new Database();
 const router = express.Router();
 
-// GET /api/machines/
-router.get('/', (req, res) => {
-    res.send('Hello, machines');
-});
-
 // GET /api/machines/list
 router.get('/list', (req, res) => {
     myDatabase.getMachineType()
