@@ -130,7 +130,9 @@ dist
 .pnp.*
 
 # config files
+config/
 databaseConfig.json
 firebaseConfig.json
 databaseConfig
 firebaseConfig
+espkey.bin
