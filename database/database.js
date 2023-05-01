@@ -5,11 +5,10 @@ class DatabaseUsers {
     constructor() {
         this.pool = mysql.createPool(databaseConfig);
         this.pool.query('SELECT 1 + 1 AS solution', (error, results, fields) => {
-            const currentDate = new Date();
             if(error) {
-                console.error(`[E][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseUsers constructor error: ${error}.`);
+                console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseUsers constructor error: ${error}.`);
             } else {
-                console.log(`[L][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseUsers constructor susses.`);
+                console.log(`[L][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseUsers constructor susses.`);
             }
         });
     }
@@ -17,23 +16,29 @@ class DatabaseUsers {
     // user api
     checkUser(user_uid, user_name, user_email) {
         return new Promise((resolve, reject) => {
-            this.pool.query('SELECT user_uid FROM user WHERE user_uid = ?', user_uid, (err, results, fields) => {
+            this.pool.query('SELECT user_uid FROM user WHERE user_uid = ?', [user_uid], (err, results, fields) => {
                 if (err) {
+                    console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseUsers checkUser error: ${err}.`);
                     reject(err);
                 } else {
-                    resolve(results);
-                }
-            });
-        });
-    }
-
-    addUser(user_uid, user_name, user_email) {
-        return new Promise((resolve, reject) => {
-            this.pool.query('INSERT INTO user(user_uid, user_name, user_email) VALUES (?, ?, ?)', [user_uid, user_name, user_email], (err, results, fields) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(results);
+                    if(results.length == 0) {
+                        console.log(`[L][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseUsers checkUser Add New user.`);
+                        this.pool.query('INSERT INTO user(user_uid, user_name, user_email) VALUES (?, ?, ?)', [user_uid, user_name, user_email], (err, results, fields) => {
+                            if (err) {
+                                console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseUsers checkUser Add User error: ${err}.`);
+                                reject(err);
+                            } else {
+                                console.log(`[L][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseUsers checkUser Add User(${user_name}) susses.`);
+                                resolve({status: "susses", message: "User Add susses.", code: 2});
+                            }
+                        });
+                    } else if(results.length == 1){
+                        // console.log(`[L][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseUsers checkUser User(${results[0].user_name}) Login susses.`);
+                        resolve({status: "susses", message: "User Login susses.", code: 1});
+                    } else {
+                        console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseUsers checkUser Found many user!.`);
+                        reject({status: "error", message: "Found many user!", code: -1});
+                    }
                 }
             });
         });
@@ -43,12 +48,11 @@ class DatabaseUsers {
     close() {
         return new Promise((resolve, reject) => {
             this.pool.end(err => {
-                const currentDate = new Date();
                 if(err) {
-                    console.error(`[E][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseUsers close error: ${err}`);
+                    console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseUsers close error: ${err}`);
                     reject(err);
                 } else {
-                    console.log(`[L][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseUsers close susses`);
+                    console.log(`[L][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseUsers close susses`);
                     resolve(true);
                 }
             });
@@ -60,11 +64,10 @@ class DatabaseMachines {
     constructor() {
         this.pool = mysql.createPool(databaseConfig);
         this.pool.query('SELECT 1 + 1 AS solution', (error, results, fields) => {
-            const currentDate = new Date();
             if(error) {
-                console.error(`[E][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseMachines constructor error: ${error}.`);
+                console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseMachines constructor error: ${error}.`);
             } else {
-                console.log(`[L][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseMachines constructor susses.`);
+                console.log(`[L][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseMachines constructor susses.`);
             }
         });
     }
@@ -617,12 +620,11 @@ class DatabaseMachines {
     close() {
         return new Promise((resolve, reject) => {
             this.pool.end(err => {
-                const currentDate = new Date();
                 if(err) {
-                    console.error(`[E][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseMachines close error: ${err}`);
+                    console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseMachines close error: ${err}`);
                     reject(err);
                 } else {
-                    console.log(`[L][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseMachines close susses`);
+                    console.log(`[L][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseMachines close susses`);
                     resolve(true);
                 }
             });
@@ -635,11 +637,10 @@ class DatabaseESP {
     constructor() {
         this.pool = mysql.createPool(databaseConfig);
         this.pool.query('SELECT 1 + 1 AS solution', (error, results, fields) => {
-            const currentDate = new Date();
             if(error) {
-                console.error(`[E][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseESP constructor error: ${error}.`);
+                console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseESP constructor error: ${error}.`);
             } else {
-                console.log(`[L][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseESP constructor susses.`);
+                console.log(`[L][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseESP constructor susses.`);
             }
         });
     }
@@ -659,16 +660,14 @@ class DatabaseESP {
         return new Promise((resolve, reject) => {
             this.pool.query(query, [user, token], (err, results, fields) => {
                 if (err) {
-                    const currentDate = new Date();
-                    console.error(`[E][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseESP checkMachineToken() error: ${err}`);
+                    console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseESP checkMachineToken() error: ${err}`);
                     reject(err);
                 } else {
                     // console.log("database.js checkMachineToken results:", results);
                     if(results.length == 1) {
                         resolve(true);
                     } else {
-                        const currentDate = new Date();
-                        console.error(`[E][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseESP checkMachineToken() error: results.length is not 1`);
+                        console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseESP checkMachineToken() error: results.length is not 1`);
                         resolve(false);
                     }
                 }
@@ -688,8 +687,7 @@ class DatabaseESP {
         return new Promise((resolve, reject) => {
             this.pool.query(query, [mac], (err, results, fields) => {
                 if (err) {
-                    const currentDate = new Date();
-                    console.error(`[E][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseESP getMachineState()[1] error: ${err}`);
+                    console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseESP getMachineState()[1] error: ${err}`);
                     reject(err);
                 } else {
                     // console.log("database.js getMachineState results:", results);
@@ -699,13 +697,11 @@ class DatabaseESP {
                             if(status > -1 && status < 7) {
                                 resolve(status);
                             } else {
-                                const currentDate = new Date();
-                                console.error(`[E][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseESP getMachineState()error: status out of range.`);
+                                console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseESP getMachineState()error: status out of range.`);
                                 resolve(-1);
                             }
                         } catch (e) {
-                            const currentDate = new Date();
-                            console.error(`[E][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseESP getMachineState()[2] error: ${e}`);
+                            console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseESP getMachineState()[2] error: ${e}`);
                             resolve(-1);
                         }
                     } else {
@@ -731,8 +727,7 @@ class DatabaseESP {
         return new Promise((resolve, reject) => {
             this.pool.query(query, [status, user], (err, results, fields) => {
                 if (err) {
-                    const currentDate = new Date();
-                    console.error(`[E][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseESP setMachineState() error: ${err}`);
+                    console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseESP setMachineState() error: ${err}`);
                     reject(err);
                 } else {
                     // console.log("🚀 ~ file: database.js:278 ~ Database ~ this.pool.query ~ results:", results)
@@ -751,8 +746,7 @@ class DatabaseESP {
         return new Promise((resolve, reject) => {
             this.pool.query(query, [mid, password], (err, results, fields) => {
                 if (err) {
-                    const currentDate = new Date();
-                    console.error(`[E][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseESP getOTAInfo() error: ${err}`);
+                    console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseESP getOTAInfo() error: ${err}`);
                     reject(err);
                 } else {
                     // console.log("database.js getOTAInfo results:", results);
@@ -774,12 +768,11 @@ class DatabaseESP {
     close() {
         return new Promise((resolve, reject) => {
             this.pool.end(err => {
-                const currentDate = new Date();
                 if(err) {
-                    console.error(`[E][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseESP close error: ${err}`);
+                    console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseESP close error: ${err}`);
                     reject(err);
                 } else {
-                    console.log(`[L][${currentDate.toLocaleString()}]📝 database.js 🔊 DatabaseESP close susses`);
+                    console.log(`[L][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseESP close susses`);
                     resolve(true);
                 }
             });

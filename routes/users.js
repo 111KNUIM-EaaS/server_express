@@ -1,59 +1,57 @@
 const express = require('express');
-const cookieParser = require('cookie-parser');
-const admin = require('firebase-admin');
-const firebaseConfig = require('../config/firebaseConfig.json');
-const router = express.Router();
+const router  = express.Router();
 
-const Database = require('../database/database.js').DatabaseUsers;
+const Database   = require('../database/database.js').DatabaseUsers;
 const myDatabase = new Database();
+
+const admin          = require('firebase-admin');
+const firebaseConfig = require('../config/firebaseConfig.json');
 
 admin.initializeApp(firebaseConfig);
 
 // GET /api/users/google/login
 router.post('/google/login', async (req, res) => {
-    const data = req.body;
-    console.log("🚀 ~ file: users.js:19~ router.post ~ data:", data);
-    console.log("🚀 ~ file: users.js:19 ~ router.post ~ data.idToken:", data.idToken);
+    try {
+        const localId   = req.get("User");
+        const idToken   = req.get("Authorization");
+        const data      = req.body;
+        const name      = data.name;
+        const email     = data.email;
 
-    let res_data;
+        // console.log(`[L][${(new Date()).toLocaleString()}]📝 users.js[/google/login] 🔊 ${name}(${localId}) All Data: ${data}.`);
+        // console.log(`[L][${(new Date()).toLocaleString()}]📝 users.js[/google/login] 🔊 ${name}(${localId}) name: ${name}, email: ${email}.`);
 
-    myDatabase.checkUser(data.localId)
-        .then((results) => {
-            if (results.length > 0) {
-                console.log(`User ${data.localId} found in database.`);
-            } else {
-                console.log(`User ${data.localId} not found in database.`);
-                console.log(`Adding user ${data.localId} to database.`);
-                myDatabase.addUser(data.localId, data.fullName, data.email);
-            }
-        })
-        .catch((err) => {
-            console.error(err);
-            res.status(500).send('Server Error');
-        });
+        await verifyIdToken(idToken)
+            .then((decodedToken) => {
+                // console.log(`[L][${(new Date()).toLocaleString()}]📝 users.js[/google/login] 🔊 ${name}(${localId}) decodedToken: ${decodedToken}.`);
+                if(decodedToken.user_id !== localId) {
+                    console.error(`[E][${(new Date()).toLocaleString()}]📝 users.js[/google/login] 🔊 ${fullName}(${localId}) Token and Uid is not match.`);
+                    res.status(403).send({ code: "403", status: "Forbidden"});
+                }
+                myDatabase.checkUser(localId, name, email)
+                        .then((results) => {
+                            if (results.code === 1 || results.code === 2) {
+                                res.status(200).send({ code: "200", status: "susses"});
+                            } else {
+                                console.log(`[L][${(new Date()).toLocaleString()}]📝 users.js[/google/login] 🔊 checkUser results: ${results.message}.`);
+                                res.status(401).send({ code: "401", status: "Unauthorized"});
+                            }
+                        })
+                        .catch((err) => {
+                            console.error(err);
+                            console.error(`[E][${(new Date()).toLocaleString()}]📝 users.js[/google/login] checkUser error: ${error}.`);
+                            res.status(500).send({ code: "500", status: "Server Error"});
+                        });
+            })
+            .catch((error) => {
+                console.error(`[E][${(new Date()).toLocaleString()}]📝 users.js[/google/login] 🔊 ${fullName}(${localId}) ${error}.`);
+                res.status(403).send({ code: "403", status: "Forbidden"});
+            });
 
-
-    await verifyIdToken(data.idToken)
-        .then((decodedToken) => {
-            console.log("🚀 ~ file: users.js:47~ .then ~ decodedToken:", decodedToken);
-            res.cookie('name', decodedToken.name);
-            res.cookie('email', decodedToken.email);
-            res.cookie('uid:', decodedToken.uid);
-            res.cookie('token:', data.idToken);
-
-            res_data = { status: "susses", name: data.fullName, email: data.email };
-        })
-        .catch((error) => {
-            console.log("🚀 ~ file: users.js:57 ~ router.post ~ error:", error);
-            res.clearCookie('name');
-            res.clearCookie('email');
-            res.clearCookie('uid');
-            res.clearCookie('token');
-
-            res_data = { status: "error" };
-        });
-
-    res.json(res_data);
+    } catch (error) {
+        console.log(`[L][${(new Date()).toLocaleString()}]📝 users.js[/google/login] 🔊 Get data error.`);
+        res.status(401).send({ code: "401", status: "Unauthorized"});
+    }
 });
 
 async function verifyIdToken(idToken) {
