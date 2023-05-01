@@ -1,5 +1,7 @@
 const mysql          = require('mysql2');
-const databaseConfig =  require('../config/databaseConfig.json');
+const crypto         = require('crypto');
+const fs             = require('fs');
+const databaseConfig = require('../config/databaseConfig.json');
 
 class DatabaseUsers {
     constructor() {
@@ -72,35 +74,27 @@ class DatabaseMachines {
         });
     }
 
-    checkPassword(username, password) {
-        return new Promise((resolve, reject) => {
-            this.pool.query('SELECT user_name FROM user', [username, password], (err, results, fields) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(results);
-                }
-            });
-        });
-    }
-
-    // machine api
-
     /**
      * [ { "type_name": "3D", "type_price": 10, "info": "Hello 3D", "total": 2 } ]
      * @returns { List } 
      */
     getMachineType() {
         return new Promise((resolve, reject) => {
-            let machine_list = [];
             const query = 'SELECT machines_type, COUNT(CASE WHEN status = 0 THEN 1 ELSE NULL END) AS count_same, type_name, price, introduce FROM machines, type WHERE machines_type = type_id GROUP BY machines_type';
 
             this.pool.query(query, (err, results, fields) => {
                 if (err) {
+                    console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 getMachineType error: ${err}.`);
                     reject(err);
                 } else {
+                    if(results.length > 0) {
+                        console.log(`[L][${(new Date()).toLocaleString()}]📝 database.js 🔊 getMachineType results: ${results}.`);
+                        resolve({ status: "success", data: results, code: 1});
+                    } else {
+                        console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 getMachineType Can not get data.`);
+                        resolve({ status: "no data", data: null, code: -1});
+                    }
                     // console.log("🚀 ~ file: database.js:77 ~ this.pool.query ~ results:", results);
-                    resolve(results);
                 }
             });
         });
@@ -285,21 +279,18 @@ class DatabaseMachines {
             // check 0 < url < 200, 0 < tag < 20 
             if(url !== undefined && tag !== undefined) {
                 if(url.length < 1 || url.length > 200 || tag.length < 1 || tag.length > 20) {
-                    console.error("sendMachineOTA[3]: error:", "url or tag length is not match");
+                    console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 sendMachineOTA url or tag length is not match.`);
                     resolve( {status: -1} );
-                } else {
-                    // // change https to http
-                    // url = url.replace("https://", "http://");
                 }
             } else {
-                console.error("sendMachineOTA[4]: error:", "url or tag is undefined");
+                console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 sendMachineOTA url or tag length is undefined.`);
                 resolve( {status: -2} );
             }
 
             // check if the machine rid and uid is match
             this.pool.query(query, [uid, rid], (err, results, fields) => {
                 if (err) {
-                    console.error("sendMachineOTA[0]: error:", err);
+                    console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 sendMachineOTA query Error: ${err}`);
                     reject(err);
                 } else {
                     if(results.length === 1) {
@@ -308,20 +299,20 @@ class DatabaseMachines {
                         const query2 = `UPDATE ${table2} SET git_name = ?, git_tag = ?, status = 5 WHERE machines_id = ?`;
                         this.pool.query(query2, [url, tag, machines_id], (err, results, fields) => {
                             if (err) {
-                                console.error("sendMachineOTA[1]: error:", err);
+                                console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 sendMachineOTA query2 Error: ${err}`);
                                 reject(err);
                             } else {
                                 if(results.affectedRows !== 1) {
-                                    console.error("sendMachineOTA[2]: error:", err);
-                                    reject(err);
+                                    console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 sendMachineOTA query2 Error: affectedRows is not 1`);
+                                    resolve( {status: -3} );
                                 } else {
-                                    console.log("sendMachineOTA: results:", results);
+                                    // console.log(`[L][${(new Date()).toLocaleString()}]📝 database.js 🔊 sendMachineOTA Success results:`, results);
                                     resolve( {status: 1} );
                                 }
                             }
                         });
                     } else {
-                        console.log("sendMachineOTA: machine is not match");
+                        console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 sendMachineOTA query Error: machine is not match`);
                         resolve( {status: 0} );
                     }
                 }
@@ -418,7 +409,7 @@ class DatabaseMachines {
                                     }).catch((err) => {
                                         reject(err);
                                     });
-                                } else if　(status === 1) {
+                                } else if (status === 1) {
                                     console.log("updateMachineStatus: ", results);
                                 } else if (status === 3) {
                                     console.log("updateMachineStatus: ", results);
@@ -635,6 +626,8 @@ class DatabaseMachines {
 /***  ESP32 Machine API [/api/espdev]  ***/
 class DatabaseESP {
     constructor() {
+        this.salt = fs.readFileSync('./config/key.bin').toString('base64');
+
         this.pool = mysql.createPool(databaseConfig);
         this.pool.query('SELECT 1 + 1 AS solution', (error, results, fields) => {
             if(error) {
@@ -658,18 +651,25 @@ class DatabaseESP {
         const select_th = 'machines_id';
         const query = `SELECT ${select_th} FROM ${table} WHERE ${user_th} = ? AND ${token_th} = ?`
         return new Promise((resolve, reject) => {
-            this.pool.query(query, [user, token], (err, results, fields) => {
-                if (err) {
-                    console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseESP checkMachineToken() error: ${err}`);
+            crypto.pbkdf2(token, this.salt, 10000, 64, 'sha256', (err, derivedKey) => {
+                if(err) {
+                    console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseESP checkMachineToken() crypto error: ${err}`);
                     reject(err);
                 } else {
-                    // console.log("database.js checkMachineToken results:", results);
-                    if(results.length == 1) {
-                        resolve(true);
-                    } else {
-                        console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseESP checkMachineToken() error: results.length is not 1`);
-                        resolve(false);
-                    }
+                    this.pool.query(query, [user, derivedKey.toString('hex')], (err, results, fields) => {
+                        if (err) {
+                            console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseESP checkMachineToken() error: ${err}`);
+                            reject(err);
+                        } else {
+                            // console.log("database.js checkMachineToken results:", results);
+                            if(results.length == 1) {
+                                resolve(true);
+                            } else {
+                                console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseESP checkMachineToken() error: results.length is not 1`);
+                                resolve(false);
+                            }
+                        }
+                    });
                 }
             });
         });
@@ -744,21 +744,28 @@ class DatabaseESP {
         const status = 5; // OTAing mode
         const query = `SELECT git_name FROM ${table} WHERE ${mid_th} = ? AND ${password_th} = ? AND status = ${status}`
         return new Promise((resolve, reject) => {
-            this.pool.query(query, [mid, password], (err, results, fields) => {
-                if (err) {
-                    console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseESP getOTAInfo() error: ${err}`);
+            crypto.pbkdf2(password, this.salt, 10000, 64, 'sha256', (err, derivedKey) => {
+                if(err) {
+                    console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseESP getOTAInfo() crypto error: ${err}`);
                     reject(err);
                 } else {
-                    // console.log("database.js getOTAInfo results:", results);
-                    if(results.length == 1) {
-                        if(results[0].git_name == null) {
-                            resolve( {status: 0, url: null} );
+                    this.pool.query(query, [mid, derivedKey.toString('hex')], (err, results, fields) => {
+                        if (err) {
+                            console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 DatabaseESP getOTAInfo() error: ${err}`);
+                            reject(err);
                         } else {
-                            resolve( {status: 1, url: results[0].git_name} );
+                            // console.log("database.js getOTAInfo results:", results);
+                            if(results.length == 1) {
+                                if(results[0].git_name == null) {
+                                    resolve( {status: 0, url: null} );
+                                } else {
+                                    resolve( {status: 1, url: results[0].git_name} );
+                                }
+                            } else {
+                                resolve( {status: 0, url: null} );
+                            }
                         }
-                    } else {
-                        resolve( {status: 0, url: null} );
-                    }
+                    });
                 }
             });
         });
