@@ -22,12 +22,16 @@ app.use('/machines', machinesRoutes);
 
 // 40X
 app.use((req, res, next) => {
-    res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+    const data = {code:'404', message:'404 Not Found', path: req.path}
+    const currentDate = new Date();
+    console.error(`[E][${currentDate.toLocaleString()}]📝 app.js 🔊 40x method: ${req.method}, ip: ${req.ip}, path: ${req.path}`);
+    res.status(404).send(JSON.stringify(data));
 });
 
 // 50X
 app.use((err, req, res, next) => {
-    console.error(err.stack);
+    const currentDate = new Date();
+    console.error(`[E][${currentDate.toLocaleString()}]📝 app.js 🔊 50x method: ${req.method}, ip: ${req.ip}, path: ${req.path} error: ${err.stack}`);
     res.status(500).send('Internal Server Error');
 });
 
