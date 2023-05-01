@@ -1,17 +1,23 @@
 const express = require('express');
-const moment = require('moment');
-const Database = require('../database/database.js').DatabaseMachines;
+const router  = express.Router();
+
+const Database   = require('../database/database.js').DatabaseMachines;
 const myDatabase = new Database();
-const router = express.Router();
+
+const moment = require('moment');
 
 // GET /api/machines/list
 router.get('/list', (req, res) => {
     myDatabase.getMachineType()
         .then((results) => {
-            data = { status: "success", data: results };
-            res.status(200).send(data);
+            if(results.code == 1) {
+                res.status(200).send({ status: "success", data: results.data });
+            } else {
+                console.error(`[E][${(new Date()).toLocaleString()}]📝 machines.js[/list] 🔊 getMachineType Can not get data.`);
+                res.status(401).send({ status: "Bad Request", data: null });
+            }
         }).catch((err) => {
-            console.error(err);
+            console.error(`[E][${(new Date()).toLocaleString()}]📝 machines.js[/list] 🔊 getMachineType error: ${err}.`);
             res.status(500).send('Server Error');
         });
 });

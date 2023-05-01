@@ -72,35 +72,27 @@ class DatabaseMachines {
         });
     }
 
-    checkPassword(username, password) {
-        return new Promise((resolve, reject) => {
-            this.pool.query('SELECT user_name FROM user', [username, password], (err, results, fields) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(results);
-                }
-            });
-        });
-    }
-
-    // machine api
-
     /**
      * [ { "type_name": "3D", "type_price": 10, "info": "Hello 3D", "total": 2 } ]
      * @returns { List } 
      */
     getMachineType() {
         return new Promise((resolve, reject) => {
-            let machine_list = [];
             const query = 'SELECT machines_type, COUNT(CASE WHEN status = 0 THEN 1 ELSE NULL END) AS count_same, type_name, price, introduce FROM machines, type WHERE machines_type = type_id GROUP BY machines_type';
 
             this.pool.query(query, (err, results, fields) => {
                 if (err) {
+                    console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 getMachineType error: ${err}.`);
                     reject(err);
                 } else {
+                    if(results.length > 0) {
+                        console.log(`[L][${(new Date()).toLocaleString()}]📝 database.js 🔊 getMachineType results: ${results}.`);
+                        resolve({ status: "success", data: results, code: 1});
+                    } else {
+                        console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 getMachineType Can not get data.`);
+                        resolve({ status: "no data", data: null, code: -1});
+                    }
                     // console.log("🚀 ~ file: database.js:77 ~ this.pool.query ~ results:", results);
-                    resolve(results);
                 }
             });
         });
@@ -418,7 +410,7 @@ class DatabaseMachines {
                                     }).catch((err) => {
                                         reject(err);
                                     });
-                                } else if　(status === 1) {
+                                } else if (status === 1) {
                                     console.log("updateMachineStatus: ", results);
                                 } else if (status === 3) {
                                     console.log("updateMachineStatus: ", results);
