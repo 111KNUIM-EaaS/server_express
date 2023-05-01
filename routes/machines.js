@@ -247,27 +247,28 @@ router.post('/ota', (req, res) => {
         const url  = data.firmware.url;
         const tag  = data.firmware.tag;
 
-        console.log(`[POST]/info (${uid}): data: ${JSON.stringify(data)}`);
+        console.log(`[L][${(new Date()).toLocaleString()}]📝 machines.js[/ota] 🔊 ${uid}(${rid})data: url: ${url}, tag: ${tag}.`);
 
         myDatabase.sendMachineOTA(uid, rid, url, tag)
             .then((results) => {
-                // console.log(`[POST]/info (${uid}): ${JSON.stringify(results)}`);
+                console.log(`[L][${(new Date()).toLocaleString()}]📝 machines.js[/ota] 🔊 sendMachineOTA results:`, results);
+
                 if(results.status === 1) {
-                    console.log(`[POST]/info (${uid}, ${rid}): Success!`);
+                    console.log(`[L][${(new Date()).toLocaleString()}]📝 machines.js[/ota] 🔊 sendMachineOTA ${uid}(${rid})results: Success`);
                     res.status(200).send("Success");
 
                 } else {
-                    console.error(`[POST]/info (${uid}, ${rid}): Failed! status: ${results.status}`);
+                    console.error(`[E][${(new Date()).toLocaleString()}]📝 machines.js[/ota] 🔊 sendMachineOTA ${uid}(${rid})Failed! status: ${results.status}`);
                     res.status(401).send("Bad Request");
                 }
 
             }).catch((err) => {
-                console.error("[POST]/info error:", err);
+                console.error(`[E][${(new Date()).toLocaleString()}]📝 machines.js[/ota] 🔊 sendMachineOTA ${uid}(${rid}) Error:`, err);
                 res.status(500).send('Server Error');
             });
 
     } catch (error) {
-        console.error("[POST]/ota error:", error);
+        console.error(`[E][${(new Date()).toLocaleString()}]📝 machines.js[/ota] 🔊 sendMachineOTA Error:`, error);
         res.status(401).send("Bad Request");
     }
 });

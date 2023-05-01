@@ -277,21 +277,18 @@ class DatabaseMachines {
             // check 0 < url < 200, 0 < tag < 20 
             if(url !== undefined && tag !== undefined) {
                 if(url.length < 1 || url.length > 200 || tag.length < 1 || tag.length > 20) {
-                    console.error("sendMachineOTA[3]: error:", "url or tag length is not match");
+                    console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 sendMachineOTA url or tag length is not match.`);
                     resolve( {status: -1} );
-                } else {
-                    // // change https to http
-                    // url = url.replace("https://", "http://");
                 }
             } else {
-                console.error("sendMachineOTA[4]: error:", "url or tag is undefined");
+                console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 sendMachineOTA url or tag length is undefined.`);
                 resolve( {status: -2} );
             }
 
             // check if the machine rid and uid is match
             this.pool.query(query, [uid, rid], (err, results, fields) => {
                 if (err) {
-                    console.error("sendMachineOTA[0]: error:", err);
+                    console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 sendMachineOTA query Error: ${err}`);
                     reject(err);
                 } else {
                     if(results.length === 1) {
@@ -300,20 +297,20 @@ class DatabaseMachines {
                         const query2 = `UPDATE ${table2} SET git_name = ?, git_tag = ?, status = 5 WHERE machines_id = ?`;
                         this.pool.query(query2, [url, tag, machines_id], (err, results, fields) => {
                             if (err) {
-                                console.error("sendMachineOTA[1]: error:", err);
+                                console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 sendMachineOTA query2 Error: ${err}`);
                                 reject(err);
                             } else {
                                 if(results.affectedRows !== 1) {
-                                    console.error("sendMachineOTA[2]: error:", err);
-                                    reject(err);
+                                    console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 sendMachineOTA query2 Error: affectedRows is not 1`);
+                                    resolve( {status: -3} );
                                 } else {
-                                    console.log("sendMachineOTA: results:", results);
+                                    // console.log(`[L][${(new Date()).toLocaleString()}]📝 database.js 🔊 sendMachineOTA Success results:`, results);
                                     resolve( {status: 1} );
                                 }
                             }
                         });
                     } else {
-                        console.log("sendMachineOTA: machine is not match");
+                        console.error(`[E][${(new Date()).toLocaleString()}]📝 database.js 🔊 sendMachineOTA query Error: machine is not match`);
                         resolve( {status: 0} );
                     }
                 }
