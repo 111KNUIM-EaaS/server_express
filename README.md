@@ -1,7 +1,16 @@
 # Eaas Server
 
-## 專案架構
+## NodeJS使用套件
+1. `body-parser`
+2. `cookie-parser`
+3. `cors`
+4. `express`
+5. `firebase`
+6. `firebase-admin`
+7. `moment`
+8. `mysql2`
 
+## 專案架構
 ```
     ├── Dockerfile
     ├── README.md
