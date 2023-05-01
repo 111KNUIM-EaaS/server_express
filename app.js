@@ -11,14 +11,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 // Router Setting
-const usersRoutes = require('./routes/api/users');
-const machinesRoutes = require('./routes/api/machines');
-const espdevRoutes = require('./routes/api/espdev');
+const usersRoutes    = require('./routes/users'   );
+const espdevRoutes   = require('./routes/espdev'  );
+const machinesRoutes = require('./routes/machines');
 
 // const { config } = require('process');
-app.use('/api/users', usersRoutes);
-app.use('/api/machines/', machinesRoutes);
-app.use('/api/espdev/', espdevRoutes);
+app.use('/users',    usersRoutes);
+app.use('/espdev',   espdevRoutes);
+app.use('/machines', machinesRoutes);
 
 // 40X
 app.use((req, res, next) => {

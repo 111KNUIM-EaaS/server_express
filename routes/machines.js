@@ -1,6 +1,6 @@
 const express = require('express');
 const moment = require('moment');
-const Database = require('../../database/database.js').Database;
+const Database = require('../database/database.js').Database;
 const myDatabase = new Database();
 const router = express.Router();
 
