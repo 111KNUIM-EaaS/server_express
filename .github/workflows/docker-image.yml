@@ -29,7 +29,7 @@ jobs:
 
       - name: Build the NodeJS Docker image
         run: |
-          TAG=$(date +%s)
+          TAG=$(git describe --tags)
           docker build . --file Dockerfile --tag ${{ secrets.DOCKER_NAME }}:${TAG}
           docker save ${{ secrets.DOCKER_NAME }}:${TAG} > ${{ secrets.DOCKER_NAME }}.tar
 
