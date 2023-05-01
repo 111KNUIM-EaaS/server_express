@@ -1,10 +1,5 @@
 # Eaas Server
 
-## API
-1. route
-2. database 
-
-
 ## 專案架構
 
 ```
