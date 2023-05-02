@@ -4,7 +4,7 @@ const router  = express.Router();
 const Database   = require('../database/database.js').DatabaseMachines;
 const myDatabase = new Database();
 
-const key = Math.floor(Math.random() * (100000 - 1000 + 1)) + 1000;
+const key = parseInt(Math.floor(Math.random() * (100000 - 1000 + 1)) + 1000);
 
 // GET /api/machines/list
 router.get('/list', (req, res) => {
@@ -249,11 +249,11 @@ router.post('/ota', (req, res) => {
 });
 
 function getCipherText(num) {
-    return num * key;
+    return parseInt(num) * parseInt(key);
 }
 
 function decryptedText(num) {
-    return parseInt(num / key);
+    return parseInt(parseInt(num) / parseInt(key));
 }
 
 module.exports = router;
