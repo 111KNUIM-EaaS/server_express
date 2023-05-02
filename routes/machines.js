@@ -126,7 +126,7 @@ router.post('/state', (req, res) => {
     myDatabase.getMachineList(uid)
         .then((results) => {
             results.data.map((item) => {
-                item.id = encryptedText(item.id);
+                item.id = getCipherText(item.id);
             });
             // console.log("[POST]/state susses results:", JSON.stringify(results));
             console.log("[POST]/state susses");
