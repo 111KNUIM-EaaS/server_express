@@ -4,12 +4,7 @@ const router  = express.Router();
 const Database   = require('../database/database.js').DatabaseMachines;
 const myDatabase = new Database();
 
-const moment = require('moment');
-
-const crypto = require('crypto');
-
-const key = crypto.randomBytes(32);
-const iv = crypto.randomBytes(16);
+const key = Math.floor(Math.random() * (100000 - 1000 + 1)) + 1000;
 
 // GET /api/machines/list
 router.get('/list', (req, res) => {
@@ -253,22 +248,12 @@ router.post('/ota', (req, res) => {
     }
 });
 
-function getCipherText(text) {
-    const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
-
-    let cipherText = cipher.update(text.toString(), 'utf8', 'hex');
-    cipherText += cipher.final('hex');
-
-    return cipherText;
+function getCipherText(num) {
+    return num * key;
 }
 
-function decryptedText(text) {
-    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
-
-    let decrypted = decipher.update(text, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-
-    return parseInt(decrypted, 10);
+function decryptedText(num) {
+    return parseInt(num / key);
 }
 
 module.exports = router;
