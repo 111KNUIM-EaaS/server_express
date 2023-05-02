@@ -154,7 +154,7 @@ router.post('/info', (req, res) => {
             });
 
     } catch (error) {
-        console.error(`[E]${(new Date()).toLocaleString()}]📝 machines.js[/info] 🔊 ${uid}(${_rid}) Data Error: ${error}.`);
+        console.error(`[E]${(new Date()).toLocaleString()}]📝 machines.js[/info] 🔊 Data Error: ${error}.`);
         res.status(401).send("Bad Request");
     }
 });
