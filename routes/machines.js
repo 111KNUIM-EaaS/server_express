@@ -11,9 +11,6 @@ const crypto = require('crypto');
 const key = crypto.randomBytes(32);
 const iv = crypto.randomBytes(16);
 
-console.log('Key:', key.toString('hex')); // 打印密钥，方便解密时使用
-console.log('IV:', iv.toString('hex')); // 打印 IV，方便解密时使用
-
 // GET /api/machines/list
 router.get('/list', (req, res) => {
     myDatabase.getMachineType()
