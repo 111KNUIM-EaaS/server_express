@@ -225,11 +225,11 @@ class DatabaseMachines {
      * @param   {String} rid - rental id 
      * @returns {Promise} 0: no machine available, 1: success, -1: error
      */
-    getMachineInfo(rid) {
+    getMachineInfo(uid, rid) {
         return new Promise((resolve, reject) => {
             const table = 'rentals';
-            const query = `SELECT machines.machines_id, type.type_name, type.price, rentals.rental_id, rentals.project_name, rentals.rental_time, rentals.git_repo, rentals.git_owner, rentals.git_token, machines.status FROM ${table} JOIN machines ON rentals.machines_id = machines.machines_id JOIN type ON machines.machines_type = type.type_id WHERE rentals.rental_id = ?`;
-            this.pool.query(query, [rid], (err, results, fields) => {
+            const query = `SELECT machines.machines_id, type.type_name, type.price, rentals.rental_id, rentals.project_name, rentals.rental_time, rentals.git_repo, rentals.git_owner, rentals.git_token, machines.status FROM ${table} JOIN machines ON rentals.machines_id = machines.machines_id JOIN type ON machines.machines_type = type.type_id WHERE rentals.rental_id = ? AND rentals.user_uid = ?`;
+            this.pool.query(query, [rid, uid], (err, results, fields) => {
                 if (err) {
                     reject(err);
                 } else {

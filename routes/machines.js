@@ -164,7 +164,7 @@ router.post('/info', (req, res) => {
 
         console.log(`[POST]/info (${uid}): rid: ${rid}`);
 
-        myDatabase.getMachineInfo(rid)
+        myDatabase.getMachineInfo(uid, rid)
             .then((results) => {
                 // console.log(`[POST]/info (${uid}): ${JSON.stringify(results)}`);
                 if(results.status == 1) {
