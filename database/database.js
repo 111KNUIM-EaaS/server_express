@@ -231,6 +231,7 @@ class DatabaseMachines {
             const query = `SELECT machines.machines_id, type.type_name, type.price, rentals.rental_id, rentals.project_name, rentals.rental_time, rentals.git_repo, rentals.git_owner, rentals.git_token, machines.status FROM ${table} JOIN machines ON rentals.machines_id = machines.machines_id JOIN type ON machines.machines_type = type.type_id WHERE rentals.rental_id = ? AND rentals.user_uid = ?`;
             this.pool.query(query, [rid, uid], (err, results, fields) => {
                 if (err) {
+                    console.error(`[E]${(new Date()).toLocaleString()}]📝 database.js 🔊 getMachineInfo Error: ${err}.`);
                     reject(err);
                 } else {
                     if(results.length > 0) {
@@ -253,10 +254,11 @@ class DatabaseMachines {
                             }
                             resolve( {data: data, status: 1} );
                         } catch (error) {
-                            console.log("database.js getMachineInfo error:", error);
+                            console.error(`[E]${(new Date()).toLocaleString()}]📝 database.js 🔊 getMachineInfo results set data Error: ${error}.`);
                             resolve( {data: null, status: -1} );
                         }
                     } else {
+                        console.error(`[E]${(new Date()).toLocaleString()}]📝 database.js 🔊 getMachineInfo Not found data.`);
                         resolve( {data: null, status: 0} );
                     }
                 }

@@ -162,26 +162,27 @@ router.post('/info', (req, res) => {
         const data  = req.body;
         const rid   = data.rid;
 
-        console.log(`[POST]/info (${uid}): rid: ${rid}`);
+        console.log(`[L]${(new Date()).toLocaleString()}]📝 machines.js[/info] 🔊 uid: ${uid}, rid: ${rid}.`);
 
         myDatabase.getMachineInfo(uid, rid)
             .then((results) => {
-                // console.log(`[POST]/info (${uid}): ${JSON.stringify(results)}`);
+                // console.log(`[L]${(new Date()).toLocaleString()}]📝 machines.js[/info] 🔊 getMachineInfo ${uid}(${rid}) results: ${JSON.stringify(results)}.`);
                 if(results.status == 1) {
-                    console.log(`[POST]/info (${uid}): Success!`);
+                    // console.log(`[L]${(new Date()).toLocaleString()}]📝 machines.js[/info] 🔊 getMachineInfo ${uid}(${rid}) Susses.`);
                     res.status(200).send(results.data);
 
                 } else {
-                    console.error(`[POST]/info (${uid}): Failed!`);
+                    console.error(`[E]${(new Date()).toLocaleString()}]📝 machines.js[/info] 🔊 getMachineInfo ${uid}(${rid}) Error.`);
                     res.status(401).send("Bad Request");
                 }
 
             }).catch((err) => {
-                console.error("[POST]/info error:", err);
+                console.error(`[E]${(new Date()).toLocaleString()}]📝 machines.js[/info] 🔊 getMachineInfo ${uid}(${rid}) Error: ${err}.`);
                 res.status(500).send('Server Error');
             });
 
     } catch (error) {
+        console.error(`[E]${(new Date()).toLocaleString()}]📝 machines.js[/info] 🔊 ${uid}(${rid}) Data Error: ${error}.`);
         res.status(401).send("Bad Request");
     }
 });
