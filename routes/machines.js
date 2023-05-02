@@ -6,6 +6,14 @@ const myDatabase = new Database();
 
 const moment = require('moment');
 
+const crypto = require('crypto');
+
+const key = crypto.randomBytes(32);
+const iv = crypto.randomBytes(16);
+
+console.log('Key:', key.toString('hex')); // 打印密钥，方便解密时使用
+console.log('IV:', iv.toString('hex')); // 打印 IV，方便解密时使用
+
 // GET /api/machines/list
 router.get('/list', (req, res) => {
     myDatabase.getMachineType()
@@ -117,6 +125,9 @@ router.post('/state', (req, res) => {
     console.log("🚀 ~ file: machines.js:55 ~ router.post ~ uid:", uid);
     myDatabase.getMachineList(uid)
         .then((results) => {
+            results.data.map((item) => {
+                item.id = encryptedText(item.id);
+            });
             // console.log("[POST]/state susses results:", JSON.stringify(results));
             console.log("[POST]/state susses");
             res.status(200).send(results);
@@ -132,9 +143,11 @@ router.post('/delete', (req, res) => {
         const data  = req.body;
         const rid   = data.rid;
 
-        console.log(`[POST]/delete (${uid}): rid: ${rid}`);
+        const _rid = decryptedText(rid);
 
-        myDatabase.deleteRentalsMachineUser(uid, rid)
+        console.log(`[POST]/delete (${uid}): rid: ${_rid}`);
+
+        myDatabase.deleteRentalsMachineUser(uid, _rid)
             .then((results) => {
                 console.log(`[POST]/delete (${uid}): ${JSON.stringify(results)}`);
                 if(results.status == 1) {
@@ -162,27 +175,29 @@ router.post('/info', (req, res) => {
         const data  = req.body;
         const rid   = data.rid;
 
-        console.log(`[L]${(new Date()).toLocaleString()}]📝 machines.js[/info] 🔊 uid: ${uid}, rid: ${rid}.`);
+        const _rid = decryptedText(rid);
 
-        myDatabase.getMachineInfo(uid, rid)
+        console.log(`[L]${(new Date()).toLocaleString()}]📝 machines.js[/info] 🔊 uid: ${uid}, rid: ${_rid}.`);
+
+        myDatabase.getMachineInfo(uid, _rid)
             .then((results) => {
-                // console.log(`[L]${(new Date()).toLocaleString()}]📝 machines.js[/info] 🔊 getMachineInfo ${uid}(${rid}) results: ${JSON.stringify(results)}.`);
+                // console.log(`[L]${(new Date()).toLocaleString()}]📝 machines.js[/info] 🔊 getMachineInfo ${uid}(${_rid}) results: ${JSON.stringify(results)}.`);
                 if(results.status == 1) {
-                    // console.log(`[L]${(new Date()).toLocaleString()}]📝 machines.js[/info] 🔊 getMachineInfo ${uid}(${rid}) Susses.`);
+                    // console.log(`[L]${(new Date()).toLocaleString()}]📝 machines.js[/info] 🔊 getMachineInfo ${uid}(${_rid}) Susses.`);
                     res.status(200).send(results.data);
 
                 } else {
-                    console.error(`[E]${(new Date()).toLocaleString()}]📝 machines.js[/info] 🔊 getMachineInfo ${uid}(${rid}) Error.`);
+                    console.error(`[E]${(new Date()).toLocaleString()}]📝 machines.js[/info] 🔊 getMachineInfo ${uid}(${_rid}) Error.`);
                     res.status(401).send("Bad Request");
                 }
 
             }).catch((err) => {
-                console.error(`[E]${(new Date()).toLocaleString()}]📝 machines.js[/info] 🔊 getMachineInfo ${uid}(${rid}) Error: ${err}.`);
+                console.error(`[E]${(new Date()).toLocaleString()}]📝 machines.js[/info] 🔊 getMachineInfo ${uid}(${_rid}) Error: ${err}.`);
                 res.status(500).send('Server Error');
             });
 
     } catch (error) {
-        console.error(`[E]${(new Date()).toLocaleString()}]📝 machines.js[/info] 🔊 ${uid}(${rid}) Data Error: ${error}.`);
+        console.error(`[E]${(new Date()).toLocaleString()}]📝 machines.js[/info] 🔊 ${uid}(${_rid}) Data Error: ${error}.`);
         res.status(401).send("Bad Request");
     }
 });
@@ -196,13 +211,15 @@ router.post('/update/info', (req, res) => {
         const repo  = data.repo; 
         const token = data.token;
 
+        const _rid = decryptedText(rid);
+
         if(owner.length == 0 || repo.length == 0) {
             console.error("[POST]/update/info error: empty input");
             res.status(401).send("Bad Request");
             return;
         }
 
-        myDatabase.updateRentalsInfo(rid, owner, repo, token)
+        myDatabase.updateRentalsInfo(_rid, owner, repo, token)
             .then((results) => {
                 console.log("🚀 ~ file: machines.js:191 ~ router.post ~ results:", results);
                 console.log("update/info success");
@@ -224,8 +241,11 @@ router.post('/update/status', (req, res) => {
         const data         = req.body;
         const rid          = data.rid;
         const status       = data.status;
-        console.log(`[POST]/update/status (${uid}): rid: ${rid}, status: ${status}`);
-        myDatabase.updateMachineStatus(uid, rid, status)
+
+        const _rid = decryptedText(rid);
+
+        console.log(`[POST]/update/status (${uid}): rid: ${_rid}, status: ${status}`);
+        myDatabase.updateMachineStatus(uid, _rid, status)
             .then((results) => {
                 console.log("update/status success");
                 console.log("🚀 ~ file: machines.js:213~ router.post ~ results:", results);
@@ -248,23 +268,25 @@ router.post('/ota', (req, res) => {
         const url  = data.firmware.url;
         const tag  = data.firmware.tag;
 
-        console.log(`[L][${(new Date()).toLocaleString()}]📝 machines.js[/ota] 🔊 ${uid}(${rid})data: url: ${url}, tag: ${tag}.`);
+        const _rid = decryptedText(rid);
 
-        myDatabase.sendMachineOTA(uid, rid, url, tag)
+        console.log(`[L][${(new Date()).toLocaleString()}]📝 machines.js[/ota] 🔊 ${uid}(${_rid})data: url: ${url}, tag: ${tag}.`);
+
+        myDatabase.sendMachineOTA(uid, _rid, url, tag)
             .then((results) => {
                 console.log(`[L][${(new Date()).toLocaleString()}]📝 machines.js[/ota] 🔊 sendMachineOTA results:`, results);
 
                 if(results.status === 1) {
-                    console.log(`[L][${(new Date()).toLocaleString()}]📝 machines.js[/ota] 🔊 sendMachineOTA ${uid}(${rid})results: Success`);
+                    console.log(`[L][${(new Date()).toLocaleString()}]📝 machines.js[/ota] 🔊 sendMachineOTA ${uid}(${_rid})results: Success`);
                     res.status(200).send("Success");
 
                 } else {
-                    console.error(`[E][${(new Date()).toLocaleString()}]📝 machines.js[/ota] 🔊 sendMachineOTA ${uid}(${rid})Failed! status: ${results.status}`);
+                    console.error(`[E][${(new Date()).toLocaleString()}]📝 machines.js[/ota] 🔊 sendMachineOTA ${uid}(${_rid})Failed! status: ${results.status}`);
                     res.status(401).send("Bad Request");
                 }
 
             }).catch((err) => {
-                console.error(`[E][${(new Date()).toLocaleString()}]📝 machines.js[/ota] 🔊 sendMachineOTA ${uid}(${rid}) Error:`, err);
+                console.error(`[E][${(new Date()).toLocaleString()}]📝 machines.js[/ota] 🔊 sendMachineOTA ${uid}(${_rid}) Error:`, err);
                 res.status(500).send('Server Error');
             });
 
@@ -273,5 +295,23 @@ router.post('/ota', (req, res) => {
         res.status(401).send("Bad Request");
     }
 });
+
+function getCipherText(text) {
+    const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+
+    let cipherText = cipher.update(text, 'utf8', 'hex');
+    cipherText += cipher.final('hex');
+
+    return cipherText;
+}
+
+function decryptedText(text) {
+    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+
+    let decrypted = decipher.update(text, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+
+    return decrypted;
+}
 
 module.exports = router;
