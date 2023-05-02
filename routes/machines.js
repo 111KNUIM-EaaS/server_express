@@ -256,7 +256,7 @@ router.post('/ota', (req, res) => {
 function getCipherText(text) {
     const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
 
-    let cipherText = cipher.update(text, 'utf8', 'hex');
+    let cipherText = cipher.update(text.toString(), 'utf8', 'hex');
     cipherText += cipher.final('hex');
 
     return cipherText;
@@ -268,7 +268,7 @@ function decryptedText(text) {
     let decrypted = decipher.update(text, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
 
-    return decrypted;
+    return parseInt(decrypted, 10);
 }
 
 module.exports = router;
