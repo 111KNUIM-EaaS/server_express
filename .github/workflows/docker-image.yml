@@ -25,7 +25,13 @@ jobs:
           fileName: 'databaseConfig.json'
           fileDir: './config/'
           encodedString: ${{ secrets.DATABASECONFIG }}
-  
+
+      - name: Setup machines_conf.json
+        uses: timheuer/base64-to-file@v1.2
+        with:
+          fileName: 'machines_conf.json'
+          fileDir: './config/'
+          encodedString: ${{ secrets.MACHINES_CONF }}
 
       - name: Build the NodeJS Docker image
         run: |

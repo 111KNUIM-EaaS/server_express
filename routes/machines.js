@@ -4,12 +4,12 @@ const router  = express.Router();
 const Database   = require('../database/database.js').DatabaseMachines;
 const myDatabase = new Database();
 
-const moment = require('moment');
+const key_conf = require('../config/machines_conf.json');
+
+const key = Buffer.from(key_conf.key, 'hex');
+const iv = Buffer.from(key_conf.iv, 'hex');
 
 const crypto = require('crypto');
-
-const key = crypto.randomBytes(32);
-const iv = crypto.randomBytes(16);
 
 // GET /api/machines/list
 router.get('/list', (req, res) => {
